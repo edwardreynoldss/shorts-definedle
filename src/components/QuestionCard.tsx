@@ -108,21 +108,22 @@ export const QuestionCard: React.FC<Props> = ({
         </Sequence>
       ))}
 
+      {/* Center the whole stack so title sits lower and progress sits higher */}
       <AbsoluteFill
         style={{
-          // Title sits lower; footer sits higher — balanced, not cramped.
-          padding: "160px 48px 120px",
+          padding: "0 48px",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
+          justifyContent: "center",
+          gap: 0,
         }}
       >
-        {/* Title first, then difficulty underneath */}
         <div
           style={{
             fontSize: 54,
             fontWeight: 700,
-            marginBottom: 22,
+            marginBottom: 20,
             textAlign: "center",
             letterSpacing: -0.5,
             lineHeight: 1.18,
@@ -140,7 +141,7 @@ export const QuestionCard: React.FC<Props> = ({
             color: colors.difficulty,
             letterSpacing: 1,
             textTransform: "uppercase",
-            marginBottom: 52,
+            marginBottom: 44,
             backgroundColor: "rgba(37,99,235,0.1)",
             border: `2px solid ${colors.accent}`,
             borderRadius: 999,
@@ -152,15 +153,13 @@ export const QuestionCard: React.FC<Props> = ({
 
         <div
           style={{
-            flex: 1,
             width: "100%",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             position: "relative",
-            minHeight: 0,
-            marginTop: 8,
-            marginBottom: 8,
+            marginBottom: inCountdown ? 36 : 44,
+            minHeight: 360,
           }}
         >
           {showDefinition ? (
@@ -186,19 +185,19 @@ export const QuestionCard: React.FC<Props> = ({
           ) : null}
         </div>
 
-        {/* Only reserve timer height while counting down — avoids a huge empty hole */}
-        <div
-          style={{
-            height: inCountdown ? 300 : inReveal ? 36 : 48,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            marginTop: inCountdown ? 12 : 0,
-            marginBottom: 12,
-          }}
-        >
-          <CircularTimer frame={countdownLocal} visible={inCountdown} />
-        </div>
+        {inCountdown ? (
+          <div
+            style={{
+              height: 300,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              marginBottom: 28,
+            }}
+          >
+            <CircularTimer frame={countdownLocal} visible />
+          </div>
+        ) : null}
 
         <ProgressDots
           total={total}
