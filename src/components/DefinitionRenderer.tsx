@@ -17,7 +17,7 @@ type Props = {
 };
 
 /**
- * Definition card with voice-synced phrase reveal (fixed size).
+ * Definition card with voice-synced word-by-word reveal (fixed size).
  */
 export const DefinitionRenderer: React.FC<Props> = ({
   segments,
