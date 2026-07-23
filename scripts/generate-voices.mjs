@@ -3,14 +3,17 @@
  * Generate ElevenLabs voiceovers for quiz definitions, save MP3s into /public,
  * and rewrite segment timings so on-screen phrases match the spoken audio.
  *
+ * Reads src/data/batches.json (from `npm run import`) when present,
+ * otherwise falls back to src/data/questions.json.
+ *
  * Usage:
- *   1. Copy .env.example → .env and set ELEVENLABS_API_KEY (+ optional VOICE_ID)
- *   2. npm run voices
- *   3. git add public src/data/questions.json && git commit
+ *   npm run setup:env
+ *   npm run voices
  *
  * Options:
- *   --dry-run     Print planned work without calling the API
- *   --only=1,3    Only regenerate question indexes (1-based)
+ *   --dry-run          Print planned work without calling the API
+ *   --only=1,3         Only regenerate global question indexes (1-based)
+ *   --batch=QuizShort-01   Only one composition / batch id
  */
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
@@ -19,17 +22,20 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
+const BATCHES_PATH = resolve(ROOT, "src/data/batches.json");
 const QUESTIONS_PATH = resolve(ROOT, "src/data/questions.json");
 const PUBLIC_DIR = resolve(ROOT, "public");
 
 const API_BASE = process.env.ELEVENLABS_API_BASE ?? "https://api.elevenlabs.io";
-const DEFAULT_VOICE_ID = "JBFqnCBsd6RMkjVDRZzb"; // George — clear narrator
+const DEFAULT_VOICE_ID = "JBFqnCBsd6RMkjVDRZzb";
 const DEFAULT_MODEL_ID = "eleven_multilingual_v2";
 const OUTPUT_FORMAT = process.env.ELEVENLABS_OUTPUT_FORMAT ?? "mp3_44100_128";
 
-const args = new Set(process.argv.slice(2));
-const dryRun = args.has("--dry-run");
-const onlyArg = [...args].find((a) => a.startsWith("--only="));
+const args = process.argv.slice(2);
+const argSet = new Set(args);
+const dryRun = argSet.has("--dry-run");
+const onlyArg = args.find((a) => a.startsWith("--only="));
+const batchArg = args.find((a) => a.startsWith("--batch="));
 const onlyIndexes = onlyArg
   ? onlyArg
       .slice("--only=".length)
@@ -37,6 +43,7 @@ const onlyIndexes = onlyArg
       .map((n) => Number(n) - 1)
       .filter((n) => Number.isInteger(n) && n >= 0)
   : null;
+const onlyBatchId = batchArg ? batchArg.slice("--batch=".length) : null;
 
 function loadEnvFile() {
   const envPath = resolve(ROOT, ".env");
@@ -64,14 +71,12 @@ const API_KEY = process.env.ELEVENLABS_API_KEY;
 const VOICE_ID = process.env.ELEVENLABS_VOICE_ID ?? DEFAULT_VOICE_ID;
 const MODEL_ID = process.env.ELEVENLABS_MODEL_ID ?? DEFAULT_MODEL_ID;
 
-/** Split a definition into phrase chunks when segments are missing. */
 function autoPhrases(definition) {
   const cleaned = definition.trim();
   const byPunct = cleaned
     .split(/(?<=[,;:])\s+/)
     .map((p) => p.trim())
     .filter(Boolean);
-
   if (byPunct.length >= 2) return byPunct;
 
   const words = cleaned.split(/\s+/);
@@ -89,12 +94,8 @@ function normalize(text) {
   return text.toLowerCase().replace(/\s+/g, " ").trim();
 }
 
-/**
- * Build a lookup from normalized-string index → alignment character index.
- */
 function buildNormIndexMap(characters) {
   let norm = "";
-  /** @type {number[]} */
   const map = [];
   let lastWasSpace = true;
 
@@ -117,9 +118,6 @@ function buildNormIndexMap(characters) {
   return { norm: norm.trimEnd(), map };
 }
 
-/**
- * Map phrase segments onto ElevenLabs character alignment timestamps.
- */
 function segmentsFromAlignment(phrases, alignment) {
   if (!alignment?.characters?.length) {
     return phrases.map((text, i) => ({
@@ -131,7 +129,6 @@ function segmentsFromAlignment(phrases, alignment) {
   const { characters, character_start_times_seconds: starts } = alignment;
   const { norm, map } = buildNormIndexMap(characters);
   let searchFrom = 0;
-  /** @type {{ text: string; time: number }[]} */
   const segments = [];
 
   for (const phrase of phrases) {
@@ -191,33 +188,105 @@ async function synthesizeWithTimestamps(text) {
   return res.json();
 }
 
+function loadJobs() {
+  if (existsSync(BATCHES_PATH)) {
+    const manifest = JSON.parse(readFileSync(BATCHES_PATH, "utf8"));
+    /** @type {{ batchId: string; question: any; globalIndex: number; save: () => void }[]} */
+    const jobs = [];
+    let globalIndex = 0;
+    for (const batch of manifest.batches) {
+      if (onlyBatchId && batch.id !== onlyBatchId) {
+        globalIndex += batch.questions.length;
+        continue;
+      }
+      for (const question of batch.questions) {
+        const gi = globalIndex++;
+        jobs.push({
+          batchId: batch.id,
+          question,
+          globalIndex: gi,
+        });
+      }
+    }
+    return {
+      mode: "batches",
+      manifest,
+      jobs,
+      save() {
+        writeFileSync(BATCHES_PATH, `${JSON.stringify(manifest, null, 2)}\n`);
+        // Keep legacy single-file in sync with first batch for convenience.
+        if (manifest.batches[0]) {
+          const first = manifest.batches[0];
+          writeFileSync(
+            QUESTIONS_PATH,
+            `${JSON.stringify(
+              {
+                title: first.title,
+                scorePrompt: first.scorePrompt,
+                scoreSubtext: first.scoreSubtext,
+                questions: first.questions,
+              },
+              null,
+              2,
+            )}\n`,
+          );
+        }
+      },
+    };
+  }
+
+  const data = JSON.parse(readFileSync(QUESTIONS_PATH, "utf8"));
+  const jobs = data.questions.map((question, globalIndex) => ({
+    batchId: "QuizShort",
+    question,
+    globalIndex,
+  }));
+  return {
+    mode: "questions",
+    jobs,
+    save() {
+      writeFileSync(QUESTIONS_PATH, `${JSON.stringify(data, null, 2)}\n`);
+    },
+  };
+}
+
 async function main() {
   if (!dryRun && !API_KEY) {
     console.error(
-      "Missing ELEVENLABS_API_KEY. Copy .env.example → .env and set your key.",
+      "Missing ELEVENLABS_API_KEY. Run npm run setup:env and set your key.",
     );
     process.exit(1);
   }
 
   mkdirSync(PUBLIC_DIR, { recursive: true });
-  const data = JSON.parse(readFileSync(QUESTIONS_PATH, "utf8"));
+  const loaded = loadJobs();
 
   console.log(
     dryRun
       ? "Dry run — no API calls."
       : `Generating voices with voice_id=${VOICE_ID}, model=${MODEL_ID}`,
   );
+  console.log(`Source: ${loaded.mode}`);
 
-  for (let i = 0; i < data.questions.length; i++) {
-    if (onlyIndexes && !onlyIndexes.includes(i)) continue;
+  const selected = loaded.jobs.filter((job) =>
+    onlyIndexes ? onlyIndexes.includes(job.globalIndex) : true,
+  );
 
-    const question = data.questions[i];
-    const voiceFile = question.voice || `voice${i + 1}.mp3`;
+  if (selected.length === 0) {
+    console.error("No questions matched your filters.");
+    process.exit(1);
+  }
+
+  for (const job of selected) {
+    const { question, globalIndex, batchId } = job;
+    const voiceFile = question.voice || `voice${globalIndex + 1}.mp3`;
     const phrases =
       question.segments?.map((s) => s.text).filter(Boolean) ??
       autoPhrases(question.definition);
 
-    console.log(`\n[${i + 1}/${data.questions.length}] ${voiceFile}`);
+    console.log(
+      `\n[${globalIndex + 1}] ${batchId} → ${voiceFile}`,
+    );
     console.log(`  text: ${question.definition}`);
     console.log(`  phrases: ${phrases.map((p) => `"${p}"`).join(" | ")}`);
 
@@ -240,13 +309,9 @@ async function main() {
   }
 
   if (!dryRun) {
-    writeFileSync(QUESTIONS_PATH, `${JSON.stringify(data, null, 2)}\n`);
-    console.log(`\nUpdated ${QUESTIONS_PATH}`);
-    console.log("Next:");
-    console.log("  npm run dev          # preview sync in Remotion Studio");
-    console.log(
-      '  git add public src/data/questions.json && git commit -m "Update ElevenLabs voiceovers"',
-    );
+    loaded.save();
+    console.log(`\nSaved updated timings.`);
+    console.log("Next: npm run dev   or   npm run render:all");
   }
 }
 

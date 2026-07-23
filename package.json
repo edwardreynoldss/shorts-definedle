@@ -23,7 +23,9 @@
   "scripts": {
     "dev": "remotion studio",
     "build": "remotion bundle",
-    "render": "remotion render QuizShort out/quiz.mp4",
+    "render": "remotion render QuizShort-01 out/QuizShort-01.mp4",
+    "render:all": "node scripts/render-all.mjs",
+    "import": "node scripts/import-questions.mjs",
     "setup:env": "node scripts/setup-env.mjs",
     "voices": "node scripts/generate-voices.mjs",
     "voices:dry": "node scripts/generate-voices.mjs --dry-run",

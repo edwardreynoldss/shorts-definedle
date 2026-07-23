@@ -1,0 +1,181 @@
+{
+  "title": "Guess the word from the definition",
+  "scorePrompt": "Comment your score below \ud83d\udc47",
+  "scoreSubtext": "How many did you get right? 4/4? 3/4? Be honest!",
+  "questionsPerVideo": 4,
+  "source": "input/questions.csv",
+  "batches": [
+    {
+      "id": "QuizShort-01",
+      "title": "Guess the word from the definition",
+      "scorePrompt": "Comment your score below \ud83d\udc47",
+      "scoreSubtext": "How many did you get right? 4/4? 3/4? Be honest!",
+      "questions": [
+        {
+          "definition": "A person who travels without a permanent home.",
+          "answer": "Nomad",
+          "voice": "voice1.mp3",
+          "difficultyLabel": "70% Question",
+          "segments": [
+            {
+              "text": "A person",
+              "time": 0
+            },
+            {
+              "text": "who travels",
+              "time": 0.55
+            },
+            {
+              "text": "without a permanent home.",
+              "time": 1.31
+            }
+          ]
+        },
+        {
+          "definition": "A sudden and complete failure or collapse.",
+          "answer": "Fiasco",
+          "voice": "voice2.mp3",
+          "difficultyLabel": "40% Question",
+          "segments": [
+            {
+              "text": "A sudden",
+              "time": 0
+            },
+            {
+              "text": "and complete failure",
+              "time": 0.53
+            },
+            {
+              "text": "or collapse.",
+              "time": 1.66
+            }
+          ]
+        },
+        {
+          "definition": "Something that is extremely large or impressive.",
+          "answer": "Colossal",
+          "voice": "voice3.mp3",
+          "difficultyLabel": "10% Question",
+          "segments": [
+            {
+              "text": "Something that is",
+              "time": 0
+            },
+            {
+              "text": "extremely large",
+              "time": 0.77
+            },
+            {
+              "text": "or impressive.",
+              "time": 2.01
+            }
+          ]
+        },
+        {
+          "definition": "A short, memorable phrase used in advertising.",
+          "answer": "Slogan",
+          "voice": "voice4.mp3",
+          "difficultyLabel": "1% Question",
+          "segments": [
+            {
+              "text": "A short, memorable phrase",
+              "time": 0
+            },
+            {
+              "text": "used in advertising.",
+              "time": 1.79
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "QuizShort-02",
+      "title": "Guess the word from the definition",
+      "scorePrompt": "Comment your score below \ud83d\udc47",
+      "scoreSubtext": "How many did you get right? 4/4? 3/4? Be honest!",
+      "questions": [
+        {
+          "definition": "A place where books are kept for reading or borrowing.",
+          "answer": "Library",
+          "voice": "v02-q1.mp3",
+          "difficultyLabel": "70% Question",
+          "segments": [
+            {
+              "text": "A place where books",
+              "time": 0.3
+            },
+            {
+              "text": "are kept for reading",
+              "time": 1.3
+            },
+            {
+              "text": "or borrowing.",
+              "time": 2.3
+            }
+          ]
+        },
+        {
+          "definition": "A device used to take photographs.",
+          "answer": "Camera",
+          "voice": "v02-q2.mp3",
+          "difficultyLabel": "40% Question",
+          "segments": [
+            {
+              "text": "A device",
+              "time": 0.3
+            },
+            {
+              "text": "used to",
+              "time": 1.3
+            },
+            {
+              "text": "take photographs.",
+              "time": 2.3
+            }
+          ]
+        },
+        {
+          "definition": "The star at the center of our solar system.",
+          "answer": "Sun",
+          "voice": "v02-q3.mp3",
+          "difficultyLabel": "10% Question",
+          "segments": [
+            {
+              "text": "The star at",
+              "time": 0.3
+            },
+            {
+              "text": "the center of",
+              "time": 1.3
+            },
+            {
+              "text": "our solar system.",
+              "time": 2.3
+            }
+          ]
+        },
+        {
+          "definition": "A meal eaten in the morning.",
+          "answer": "Breakfast",
+          "voice": "v02-q4.mp3",
+          "difficultyLabel": "1% Question",
+          "segments": [
+            {
+              "text": "A meal",
+              "time": 0.3
+            },
+            {
+              "text": "eaten in",
+              "time": 1.3
+            },
+            {
+              "text": "the morning.",
+              "time": 2.3
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
