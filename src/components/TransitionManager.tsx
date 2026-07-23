@@ -18,7 +18,7 @@ export const TransitionManager: React.FC<Props> = ({ data }) => {
   const title = data.title ?? "Guess the word from the definition";
   const scorePrompt = data.scorePrompt ?? "Comment your score below 👇";
   const scoreSubtext =
-    data.scoreSubtext ?? "How many did you get right?";
+    data.scoreSubtext ?? "Subscribe for daily word quizzes";
 
   return (
     <AbsoluteFill>

@@ -28,7 +28,7 @@ export const DIFFICULTY_LABELS = {
 export const META = {
   title: "Guess the word from the definition",
   scorePrompt: "Comment your score below 👇",
-  scoreSubtext: "How many did you get right? 4/4? 3/4? Be honest!",
+  scoreSubtext: "Subscribe for daily word quizzes",
 };
 
 export function pad(n) {

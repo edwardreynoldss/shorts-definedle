@@ -110,7 +110,7 @@ export const QuestionCard: React.FC<Props> = ({
           durationInFrames={Math.round(fps * 0.4)}
           layout="none"
         >
-          <Audio src={staticFile("tick.mp3")} volume={0.55} />
+          <Audio src={staticFile("tick.mp3")} volume={0.28} />
         </Sequence>
       ))}
 

@@ -10,7 +10,7 @@ export const QUESTIONS_PER_VIDEO = 4;
 export const DEFAULT_QUIZ_META = {
   title: "Guess the word from the definition",
   scorePrompt: "Comment your score below 👇",
-  scoreSubtext: "How many did you get right? 4/4? 3/4? Be honest!",
+  scoreSubtext: "Subscribe for daily word quizzes",
 } as const;
 
 export type QuizBatch = QuizData & {

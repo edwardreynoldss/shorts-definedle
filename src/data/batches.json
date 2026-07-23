@@ -1,7 +1,7 @@
 {
   "title": "Guess the word from the definition",
   "scorePrompt": "Comment your score below 👇",
-  "scoreSubtext": "How many did you get right? 4/4? 3/4? Be honest!",
+  "scoreSubtext": "Subscribe for daily word quizzes",
   "questionsPerVideo": 4,
   "source": "input/question-bank.csv",
   "batches": [
@@ -9,7 +9,7 @@
       "id": "QuizShort-01",
       "title": "Guess the word from the definition",
       "scorePrompt": "Comment your score below 👇",
-      "scoreSubtext": "How many did you get right? 4/4? 3/4? Be honest!",
+      "scoreSubtext": "Subscribe for daily word quizzes",
       "questionIds": [
         "q001",
         "q002",
@@ -104,7 +104,7 @@
       "id": "QuizShort-02",
       "title": "Guess the word from the definition",
       "scorePrompt": "Comment your score below 👇",
-      "scoreSubtext": "How many did you get right? 4/4? 3/4? Be honest!",
+      "scoreSubtext": "Subscribe for daily word quizzes",
       "questionIds": [
         "q005",
         "q006",

@@ -14,7 +14,7 @@ type Props = {
 };
 
 /**
- * Final CTA: ask viewers to comment their score.
+ * Final CTA: comment score + subscribe.
  */
 export const ScoreOutro: React.FC<Props> = ({ prompt, subtext }) => {
   const frame = useCurrentFrame();
@@ -45,13 +45,14 @@ export const ScoreOutro: React.FC<Props> = ({ prompt, subtext }) => {
           borderRadius: 36,
           background: colors.card,
           border: `2px solid ${colors.accent}`,
-          boxShadow: "0 18px 50px rgba(37,99,235,0.14), 0 4px 0 rgba(37,99,235,0.08)",
+          boxShadow:
+            "0 18px 50px rgba(37,99,235,0.14), 0 4px 0 rgba(37,99,235,0.08)",
           opacity: interpolate(enter, [0, 1], [0, 1]),
           transform: `translateY(${interpolate(enter, [0, 1], [50, 0])}px) scale(${pulse})`,
           textAlign: "center",
           display: "flex",
           flexDirection: "column",
-          gap: 28,
+          gap: 32,
           alignItems: "center",
         }}
       >
@@ -78,11 +79,16 @@ export const ScoreOutro: React.FC<Props> = ({ prompt, subtext }) => {
         </div>
         <div
           style={{
-            fontSize: 34,
-            fontWeight: 500,
-            color: colors.textMuted,
-            lineHeight: 1.35,
-            maxWidth: 720,
+            marginTop: 8,
+            padding: "18px 34px",
+            borderRadius: 999,
+            backgroundColor: "rgba(37,99,235,0.12)",
+            border: `2px solid ${colors.accent}`,
+            fontSize: 40,
+            fontWeight: 700,
+            color: colors.accent,
+            lineHeight: 1.25,
+            maxWidth: 820,
           }}
         >
           {subtext}
