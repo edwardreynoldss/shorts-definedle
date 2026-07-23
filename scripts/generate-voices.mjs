@@ -3,20 +3,22 @@
  * Generate ElevenLabs voiceovers for quiz definitions, save MP3s into /public,
  * and rewrite segment timings so on-screen phrases match the spoken audio.
  *
- * Reads src/data/batches.json (from `npm run import`) when present,
- * otherwise falls back to src/data/questions.json.
+ * Reads src/data/batches.json when present, otherwise src/data/questions.json.
  *
  * Usage:
- *   npm run setup:env
- *   npm run voices
+ *   npm run voices              # only missing question voices
+ *   npm run voices:intro        # intro voice only (skipped if intro.mp3 exists)
+ *   npm run voices -- --force   # regenerate everything selected
  *
  * Options:
- *   --dry-run          Print planned work without calling the API
- *   --only=1,3         Only regenerate global question indexes (1-based)
+ *   --dry-run              Print planned work without calling the API
+ *   --intro-only           Generate intro voice only
+ *   --force                Recreate audio even if the mp3 already exists
+ *   --only=1,3             Only these global question indexes (1-based)
  *   --batch=QuizShort-01   Only one composition / batch id
  */
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync, statSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -30,6 +32,7 @@ const API_BASE = process.env.ELEVENLABS_API_BASE ?? "https://api.elevenlabs.io";
 const DEFAULT_VOICE_ID = "JBFqnCBsd6RMkjVDRZzb";
 const DEFAULT_MODEL_ID = "eleven_multilingual_v2";
 const OUTPUT_FORMAT = process.env.ELEVENLABS_OUTPUT_FORMAT ?? "mp3_44100_128";
+const MIN_VOICE_BYTES = 1500;
 
 const INTRO = {
   brand: "Definedle",
@@ -44,6 +47,7 @@ const args = process.argv.slice(2);
 const argSet = new Set(args);
 const dryRun = argSet.has("--dry-run");
 const introOnly = argSet.has("--intro-only");
+const force = argSet.has("--force");
 const onlyArg = args.find((a) => a.startsWith("--only="));
 const batchArg = args.find((a) => a.startsWith("--batch="));
 const onlyIndexes = onlyArg
@@ -293,20 +297,104 @@ function findPhraseStartSec(phrase, alignment) {
   return starts[map[at] ?? 0] ?? null;
 }
 
-async function generateIntroVoice(manifest) {
-  const introText = `${INTRO.line1} ${INTRO.line2}`;
+function voiceFileExists(filename) {
+  const outPath = resolve(PUBLIC_DIR, filename);
+  if (!existsSync(outPath)) return false;
+  try {
+    return statSync(outPath).size >= MIN_VOICE_BYTES;
+  } catch {
+    return false;
+  }
+}
+
+function existingIntroMeta(manifest) {
+  const fromManifest = {
+    introVoice:
+      manifest?.introVoice ??
+      manifest?.batches?.[0]?.introVoice ??
+      INTRO.voiceFile,
+    introDurationSec:
+      manifest?.introDurationSec ??
+      manifest?.batches?.[0]?.introDurationSec ??
+      INTRO.durationSec,
+    introLine2AtSec:
+      manifest?.introLine2AtSec ??
+      manifest?.batches?.[0]?.introLine2AtSec ??
+      INTRO.line2AtSec,
+  };
+  return fromManifest;
+}
+
+function applyIntroMeta(manifest, meta) {
+  if (!manifest) return;
+  manifest.title = INTRO.brand;
+  manifest.introVoice = meta.introVoice;
+  manifest.introDurationSec = meta.introDurationSec;
+  manifest.introLine2AtSec = meta.introLine2AtSec;
+  for (const batch of manifest.batches ?? []) {
+    batch.title = INTRO.brand;
+    batch.introVoice = meta.introVoice;
+    batch.introDurationSec = meta.introDurationSec;
+    batch.introLine2AtSec = meta.introLine2AtSec;
+  }
+}
+
+function saveIntroSideFiles(loaded, introMeta) {
+  if (loaded.mode === "batches") {
+    applyIntroMeta(loaded.manifest, introMeta);
+    loaded.save();
+    if (loaded.manifest.batches[0]) {
+      const first = loaded.manifest.batches[0];
+      writeFileSync(
+        QUESTIONS_PATH,
+        `${JSON.stringify(
+          {
+            title: INTRO.brand,
+            scorePrompt: first.scorePrompt,
+            scoreSubtext: first.scoreSubtext,
+            introVoice: introMeta.introVoice,
+            introDurationSec: introMeta.introDurationSec,
+            introLine2AtSec: introMeta.introLine2AtSec,
+            questions: first.questions,
+          },
+          null,
+          2,
+        )}\n`,
+      );
+    }
+    return;
+  }
+
+  const data = JSON.parse(readFileSync(QUESTIONS_PATH, "utf8"));
+  data.title = INTRO.brand;
+  Object.assign(data, introMeta);
+  writeFileSync(QUESTIONS_PATH, `${JSON.stringify(data, null, 2)}\n`);
+}
+
+async function generateIntroVoice(manifest, { skipIfExists }) {
   const voiceFile = INTRO.voiceFile;
   console.log(`\n[intro] ${voiceFile}`);
-  console.log(`  text: ${introText}`);
+  console.log(`  text: ${INTRO.line1} ${INTRO.line2}`);
+
+  if (skipIfExists && voiceFileExists(voiceFile)) {
+    const meta = existingIntroMeta(manifest);
+    console.log(
+      `  skip (already exists)  duration=${meta.introDurationSec}s line2At=${meta.introLine2AtSec}s`,
+    );
+    return { ...meta, skipped: true };
+  }
 
   if (dryRun) {
+    console.log("  would generate");
     return {
       introVoice: voiceFile,
       introDurationSec: INTRO.durationSec,
       introLine2AtSec: INTRO.line2AtSec,
+      skipped: false,
     };
   }
 
+  const introText = `${INTRO.line1} ${INTRO.line2}`;
   const result = await synthesizeWithTimestamps(introText);
   const audioBuffer = Buffer.from(result.audio_base64, "base64");
   const outPath = resolve(PUBLIC_DIR, voiceFile);
@@ -329,21 +417,10 @@ async function generateIntroVoice(manifest) {
     introVoice: voiceFile,
     introDurationSec,
     introLine2AtSec: Number(Number(line2At).toFixed(2)),
+    skipped: false,
   };
 
-  if (manifest) {
-    manifest.title = INTRO.brand;
-    manifest.introVoice = meta.introVoice;
-    manifest.introDurationSec = meta.introDurationSec;
-    manifest.introLine2AtSec = meta.introLine2AtSec;
-    for (const batch of manifest.batches ?? []) {
-      batch.title = INTRO.brand;
-      batch.introVoice = meta.introVoice;
-      batch.introDurationSec = meta.introDurationSec;
-      batch.introLine2AtSec = meta.introLine2AtSec;
-    }
-  }
-
+  applyIntroMeta(manifest, meta);
   return meta;
 }
 
@@ -364,54 +441,23 @@ async function main() {
       : `Generating voices with voice_id=${VOICE_ID}, model=${MODEL_ID}`,
   );
   console.log(`Source: ${loaded.mode}`);
-
-  // Always (re)generate the shared cold-open intro with the same voice.
-  const introMeta = await generateIntroVoice(
-    loaded.mode === "batches" ? loaded.manifest : null,
+  console.log(
+    force
+      ? "Mode: force regenerate"
+      : "Mode: skip existing mp3 files (use --force to recreate)",
   );
 
-  if (loaded.mode === "questions") {
-    const data = JSON.parse(readFileSync(QUESTIONS_PATH, "utf8"));
-    data.title = INTRO.brand;
-    Object.assign(data, introMeta);
-    writeFileSync(QUESTIONS_PATH, `${JSON.stringify(data, null, 2)}\n`);
-  }
-
+  // Intro is opt-in only — never burns credits on normal `npm run voices`.
   if (introOnly) {
-    if (!dryRun) {
-      if (loaded.mode === "batches") {
-        loaded.manifest.title = INTRO.brand;
-        loaded.manifest.introVoice = introMeta.introVoice;
-        loaded.manifest.introDurationSec = introMeta.introDurationSec;
-        loaded.manifest.introLine2AtSec = introMeta.introLine2AtSec;
-        for (const batch of loaded.manifest.batches) {
-          batch.title = INTRO.brand;
-          batch.introVoice = introMeta.introVoice;
-          batch.introDurationSec = introMeta.introDurationSec;
-          batch.introLine2AtSec = introMeta.introLine2AtSec;
-        }
-        loaded.save();
-        if (loaded.manifest.batches[0]) {
-          const first = loaded.manifest.batches[0];
-          writeFileSync(
-            QUESTIONS_PATH,
-            `${JSON.stringify(
-              {
-                title: INTRO.brand,
-                scorePrompt: first.scorePrompt,
-                scoreSubtext: first.scoreSubtext,
-                introVoice: introMeta.introVoice,
-                introDurationSec: introMeta.introDurationSec,
-                introLine2AtSec: introMeta.introLine2AtSec,
-                questions: first.questions,
-              },
-              null,
-              2,
-            )}\n`,
-          );
-        }
-      }
-      console.log("\nIntro-only voice saved.");
+    const introMeta = await generateIntroVoice(
+      loaded.mode === "batches" ? loaded.manifest : null,
+      { skipIfExists: !force },
+    );
+    if (!dryRun && !introMeta.skipped) {
+      saveIntroSideFiles(loaded, introMeta);
+      console.log("\nIntro voice saved.");
+    } else if (!dryRun && introMeta.skipped) {
+      console.log("\nIntro already present — nothing to do.");
     }
     return;
   }
@@ -420,10 +466,13 @@ async function main() {
     onlyIndexes ? onlyIndexes.includes(job.globalIndex) : true,
   );
 
-  if (selected.length === 0 && onlyIndexes) {
+  if (selected.length === 0) {
     console.error("No questions matched your filters.");
     process.exit(1);
   }
+
+  let created = 0;
+  let skipped = 0;
 
   for (const job of selected) {
     const { question, globalIndex, batchId } = job;
@@ -436,7 +485,17 @@ async function main() {
     console.log(`  text: ${question.definition}`);
     console.log(`  phrases: ${phrases.map((p) => `"${p}"`).join(" | ")}`);
 
-    if (dryRun) continue;
+    if (!force && voiceFileExists(voiceFile)) {
+      console.log("  skip (already exists)");
+      skipped += 1;
+      continue;
+    }
+
+    if (dryRun) {
+      console.log("  would generate");
+      created += 1;
+      continue;
+    }
 
     const result = await synthesizeWithTimestamps(question.definition);
     const audioBuffer = Buffer.from(result.audio_base64, "base64");
@@ -448,6 +507,7 @@ async function main() {
     const segments = segmentsFromAlignment(phrases, alignment);
     question.voice = voiceFile;
     question.segments = segments;
+    created += 1;
     console.log(
       "  segments:",
       segments.map((s) => `${s.time}s "${s.text}"`).join(", "),
@@ -455,34 +515,19 @@ async function main() {
   }
 
   if (!dryRun) {
-    if (loaded.mode === "batches") {
-      loaded.manifest.title = INTRO.brand;
-      loaded.manifest.introVoice = introMeta.introVoice;
-      loaded.manifest.introDurationSec = introMeta.introDurationSec;
-      loaded.manifest.introLine2AtSec = introMeta.introLine2AtSec;
-      for (const batch of loaded.manifest.batches) {
-        batch.title = INTRO.brand;
-        batch.introVoice = introMeta.introVoice;
-        batch.introDurationSec = introMeta.introDurationSec;
-        batch.introLine2AtSec = introMeta.introLine2AtSec;
-        batch.scoreSubtext =
-          batch.scoreSubtext ?? "Subscribe for daily word quizzes";
-      }
-    }
+    // Preserve any existing intro metadata; do not regenerate intro here.
     loaded.save();
-    // Also patch questions.json intro fields when using batches.
     if (loaded.mode === "batches" && loaded.manifest.batches[0]) {
       const first = loaded.manifest.batches[0];
+      const introMeta = existingIntroMeta(loaded.manifest);
       writeFileSync(
         QUESTIONS_PATH,
         `${JSON.stringify(
           {
-            title: INTRO.brand,
+            title: first.title ?? INTRO.brand,
             scorePrompt: first.scorePrompt,
             scoreSubtext: first.scoreSubtext,
-            introVoice: introMeta.introVoice,
-            introDurationSec: introMeta.introDurationSec,
-            introLine2AtSec: introMeta.introLine2AtSec,
+            ...introMeta,
             questions: first.questions,
           },
           null,
@@ -490,11 +535,13 @@ async function main() {
         )}\n`,
       );
     }
-    console.log(`\nSaved updated timings + intro voice.`);
-    console.log("Next: npm run dev   or   npm run render:all");
-  } else {
-    console.log("\nDry run complete (including intro plan).");
   }
+
+  console.log(
+    `\nDone. generated=${created} skipped=${skipped}${force ? " (forced)" : ""}`,
+  );
+  console.log("Intro is separate: npm run voices:intro");
+  console.log("Next: npm run dev   or   npm run render:all");
 }
 
 main().catch((err) => {
