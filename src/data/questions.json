@@ -9,9 +9,18 @@
       "voice": "voice1.mp3",
       "difficultyLabel": "70% Question",
       "segments": [
-        { "text": "A person", "time": 0.4 },
-        { "text": "who travels", "time": 1.4 },
-        { "text": "without a permanent home.", "time": 2.8 }
+        {
+          "text": "A person",
+          "time": 0
+        },
+        {
+          "text": "who travels",
+          "time": 0.55
+        },
+        {
+          "text": "without a permanent home.",
+          "time": 1.31
+        }
       ]
     },
     {
@@ -20,9 +29,18 @@
       "voice": "voice2.mp3",
       "difficultyLabel": "40% Question",
       "segments": [
-        { "text": "A sudden", "time": 0.35 },
-        { "text": "and complete failure", "time": 1.2 },
-        { "text": "or collapse.", "time": 2.5 }
+        {
+          "text": "A sudden",
+          "time": 0
+        },
+        {
+          "text": "and complete failure",
+          "time": 0.53
+        },
+        {
+          "text": "or collapse.",
+          "time": 1.66
+        }
       ]
     },
     {
@@ -31,9 +49,18 @@
       "voice": "voice3.mp3",
       "difficultyLabel": "10% Question",
       "segments": [
-        { "text": "Something that is", "time": 0.4 },
-        { "text": "extremely large", "time": 1.5 },
-        { "text": "or impressive.", "time": 2.7 }
+        {
+          "text": "Something that is",
+          "time": 0
+        },
+        {
+          "text": "extremely large",
+          "time": 0.77
+        },
+        {
+          "text": "or impressive.",
+          "time": 2.01
+        }
       ]
     },
     {
@@ -42,8 +69,14 @@
       "voice": "voice4.mp3",
       "difficultyLabel": "1% Question",
       "segments": [
-        { "text": "A short, memorable phrase", "time": 0.5 },
-        { "text": "used in advertising.", "time": 2.2 }
+        {
+          "text": "A short, memorable phrase",
+          "time": 0
+        },
+        {
+          "text": "used in advertising.",
+          "time": 1.79
+        }
       ]
     }
   ]
