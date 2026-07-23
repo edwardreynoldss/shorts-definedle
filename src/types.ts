@@ -17,6 +17,8 @@ export type QuizQuestion = {
    * Falls back to the default ladder by index when omitted.
    */
   difficultyLabel?: string;
+  /** Stable id from input/question-bank.csv */
+  bankId?: string;
 };
 
 export type QuizData = {

@@ -5,81 +5,77 @@
   "questions": [
     {
       "bankId": "q001",
-      "definition": "A person who travels without a permanent home.",
-      "answer": "Nomad",
-      "voice": "voice1.mp3",
+      "definition": "A large natural elevation of the earth's surface rising abruptly.",
+      "answer": "Mountain",
+      "voice": "v01-q1.mp3",
       "difficultyLabel": "70% Question",
       "segments": [
         {
-          "text": "A person",
+          "text": "A large natural elevation",
           "time": 0.3
         },
         {
-          "text": "who travels",
+          "text": "of the earth's surface",
           "time": 1.3
         },
         {
-          "text": "without a permanent home.",
+          "text": "rising abruptly.",
           "time": 2.3
         }
       ]
     },
     {
       "bankId": "q002",
-      "definition": "A sudden and complete failure or collapse.",
-      "answer": "Fiasco",
-      "voice": "voice2.mp3",
+      "definition": "A tool that shows direction using a magnetic needle.",
+      "answer": "Compass",
+      "voice": "v01-q2.mp3",
       "difficultyLabel": "40% Question",
       "segments": [
         {
-          "text": "A sudden",
+          "text": "A tool that",
           "time": 0.3
         },
         {
-          "text": "and complete failure",
+          "text": "shows direction using",
           "time": 1.3
         },
         {
-          "text": "or collapse.",
+          "text": "a magnetic needle.",
           "time": 2.3
         }
       ]
     },
     {
       "bankId": "q003",
-      "definition": "Something that is extremely large or impressive.",
-      "answer": "Colossal",
-      "voice": "voice3.mp3",
+      "definition": "The process plants use to make food from sunlight.",
+      "answer": "Photosynthesis",
+      "voice": "v01-q3.mp3",
       "difficultyLabel": "10% Question",
       "segments": [
         {
-          "text": "Something that is",
+          "text": "The process plants",
           "time": 0.3
         },
         {
-          "text": "extremely large",
+          "text": "use to make",
           "time": 1.3
         },
         {
-          "text": "or impressive.",
+          "text": "food from sunlight.",
           "time": 2.3
         }
       ]
     },
     {
       "bankId": "q004",
-      "definition": "A short, memorable phrase used in advertising.",
-      "answer": "Slogan",
-      "voice": "voice4.mp3",
+      "definition": "Extremely idealistic and unrealistic.",
+      "answer": "Quixotic",
+      "voice": "v01-q4.mp3",
       "difficultyLabel": "1% Question",
       "segments": [
         {
-          "text": "A short, memorable phrase",
+          "text": "Extremely idealistic and unrealistic.",
           "time": 0.3
-        },
-        {
-          "text": "used in advertising.",
-          "time": 1.3
         }
       ]
     }

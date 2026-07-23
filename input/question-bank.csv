@@ -1,0 +1,21 @@
+id,difficulty,definition,answer,status,phrases
+q001,70,A person who travels without a permanent home.,Nomad,queued,A person|who travels|without a permanent home.
+q002,40,A sudden and complete failure or collapse.,Fiasco,queued,A sudden|and complete failure|or collapse.
+q003,10,Something that is extremely large or impressive.,Colossal,queued,Something that is|extremely large|or impressive.
+q004,1,"A short, memorable phrase used in advertising.",Slogan,queued,"A short, memorable phrase|used in advertising."
+q005,70,A place where books are kept for reading or borrowing.,Library,queued,
+q006,40,A device used to take photographs.,Camera,queued,
+q007,10,The star at the center of our solar system.,Sun,queued,
+q008,1,A meal eaten in the morning.,Breakfast,queued,
+q009,70,A large body of salt water that covers most of the Earth.,Ocean,unused,
+q010,70,"A tool used for writing or drawing, usually made of wood and graphite.",Pencil,unused,
+q011,40,"A structure built to cross over a river, road, or valley.",Bridge,unused,
+q012,40,A building where art or historical objects are displayed.,Museum,unused,
+q013,10,When one space object blocks the light from another.,Eclipse,unused,
+q014,10,The force that pulls objects toward each other.,Gravity,unused,
+q015,1,Lasting for a very short time.,Ephemeral,unused,
+q016,1,A complicated network of paths that is hard to find your way through.,Labyrinth,unused,
+q017,70,A large natural elevation of the earth's surface rising abruptly.,Mountain,unused,
+q018,40,A tool that shows direction using a magnetic needle.,Compass,unused,
+q019,10,The process plants use to make food from sunlight.,Photosynthesis,unused,
+q020,1,Extremely idealistic and unrealistic.,Quixotic,unused,
