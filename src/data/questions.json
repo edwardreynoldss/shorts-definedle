@@ -1,0 +1,45 @@
+{
+  "title": "Guess the Word",
+  "questions": [
+    {
+      "definition": "A person who travels without a permanent home.",
+      "answer": "Nomad",
+      "voice": "voice1.mp3",
+      "segments": [
+        { "text": "A person", "time": 0.4 },
+        { "text": "who travels", "time": 1.4 },
+        { "text": "without a permanent home.", "time": 2.8 }
+      ]
+    },
+    {
+      "definition": "A sudden and complete failure or collapse.",
+      "answer": "Fiasco",
+      "voice": "voice2.mp3",
+      "segments": [
+        { "text": "A sudden", "time": 0.35 },
+        { "text": "and complete failure", "time": 1.2 },
+        { "text": "or collapse.", "time": 2.5 }
+      ]
+    },
+    {
+      "definition": "Something that is extremely large or impressive.",
+      "answer": "Colossal",
+      "voice": "voice3.mp3",
+      "segments": [
+        { "text": "Something that is", "time": 0.4 },
+        { "text": "extremely large", "time": 1.5 },
+        { "text": "or impressive.", "time": 2.7 }
+      ]
+    },
+    {
+      "definition": "A short, memorable phrase used in advertising.",
+      "answer": "Slogan",
+      "voice": "voice4.mp3",
+      "isBonus": true,
+      "segments": [
+        { "text": "A short, memorable phrase", "time": 0.5 },
+        { "text": "used in advertising.", "time": 2.2 }
+      ]
+    }
+  ]
+}
