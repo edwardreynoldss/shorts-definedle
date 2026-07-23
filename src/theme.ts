@@ -55,8 +55,10 @@ export const TIMING = {
 export const LAYOUT = {
   titleTop: 96,
   badgeTop: 230,
-  cardTop: 360,
+  /** Card sits slightly above vertical center (center ≈ 860 on 1920). */
+  cardTop: 660,
   cardHeight: 400,
-  timerTop: 860,
-  progressTop: 1220,
+  /** Keep the same gaps under the card as before. */
+  timerTop: 1160,
+  progressTop: 1520,
 } as const;
