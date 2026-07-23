@@ -24,6 +24,7 @@
     "dev": "remotion studio",
     "build": "remotion bundle",
     "render": "remotion render QuizShort out/quiz.mp4",
+    "setup:env": "node scripts/setup-env.mjs",
     "voices": "node scripts/generate-voices.mjs",
     "voices:dry": "node scripts/generate-voices.mjs --dry-run",
     "upgrade": "remotion upgrade",
