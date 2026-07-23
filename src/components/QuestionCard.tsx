@@ -9,7 +9,7 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
-import { colors } from "../theme";
+import { colors, LAYOUT } from "../theme";
 import type { QuizQuestion } from "../types";
 import {
   getDifficultyLabel,
@@ -27,16 +27,6 @@ type Props = {
   title: string;
   timeline: QuestionTimeline;
 };
-
-/** Fixed 1080×1920 slots — never reflow when text/timer changes. */
-const LAYOUT = {
-  titleTop: 118,
-  badgeTop: 268,
-  cardTop: 390,
-  cardHeight: 430,
-  timerTop: 900,
-  progressTop: 1260,
-} as const;
 
 /**
  * Full-screen layout for a single quiz question.
@@ -121,11 +111,11 @@ export const QuestionCard: React.FC<Props> = ({
           top: LAYOUT.titleTop,
           left: 48,
           right: 48,
-          fontSize: 54,
+          fontSize: 84,
           fontWeight: 700,
           textAlign: "center",
-          letterSpacing: -0.5,
-          lineHeight: 1.18,
+          letterSpacing: -1.2,
+          lineHeight: 1.05,
           color: colors.text,
         }}
       >

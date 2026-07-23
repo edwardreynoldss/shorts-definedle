@@ -25,6 +25,18 @@ export const VIDEO = {
   fps: 30,
 } as const;
 
+/** Brand + cold-open copy shown before question 1. */
+export const INTRO = {
+  brand: "Definedle",
+  line1: "Can you guess the word from the definition alone?",
+  line2: "Only 1% get the last question correct",
+  voiceFile: "intro.mp3",
+  /** Fallback length if audio metadata isn't available yet. */
+  durationSec: 5.5,
+  /** When line2 appears (seconds into intro). */
+  line2AtSec: 2.4,
+} as const;
+
 /** Timing knobs shared across the quiz engine. */
 export const TIMING = {
   /** Pause after narration before the countdown starts. */
@@ -37,4 +49,14 @@ export const TIMING = {
   transitionSec: 0.3,
   /** Final “comment your score” outro length. */
   scoreOutroSec: 3.2,
+} as const;
+
+/** Fixed 1080×1920 slots matching the target Short spacing. */
+export const LAYOUT = {
+  titleTop: 96,
+  badgeTop: 230,
+  cardTop: 360,
+  cardHeight: 400,
+  timerTop: 860,
+  progressTop: 1220,
 } as const;

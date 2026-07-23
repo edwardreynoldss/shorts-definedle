@@ -8,7 +8,7 @@ import type { QuizData, QuizQuestion } from "../types";
 export const QUESTIONS_PER_VIDEO = 4;
 
 export const DEFAULT_QUIZ_META = {
-  title: "Guess the word from the definition",
+  title: "Definedle",
   scorePrompt: "Comment your score below 👇",
   scoreSubtext: "Subscribe for daily word quizzes",
 } as const;

@@ -1,7 +1,10 @@
 {
-  "title": "Guess the word from the definition",
+  "title": "Definedle",
   "scorePrompt": "Comment your score below 👇",
   "scoreSubtext": "Subscribe for daily word quizzes",
+  "introVoice": "intro.mp3",
+  "introDurationSec": 6.63,
+  "introLine2AtSec": 3.1,
   "questions": [
     {
       "bankId": "q001",

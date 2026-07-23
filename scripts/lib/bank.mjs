@@ -26,7 +26,7 @@ export const DIFFICULTY_LABELS = {
 };
 
 export const META = {
-  title: "Guess the word from the definition",
+  title: "Definedle",
   scorePrompt: "Comment your score below 👇",
   scoreSubtext: "Subscribe for daily word quizzes",
 };

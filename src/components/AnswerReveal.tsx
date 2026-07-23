@@ -39,7 +39,7 @@ export const AnswerReveal: React.FC<Props> = ({ answer, frame }) => {
         position: "relative",
         width: "90%",
         maxWidth: 920,
-        height: 430,
+        height: 400,
         padding: "48px 48px",
         borderRadius: 36,
         background: "rgba(240,253,244,0.95)",

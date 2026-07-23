@@ -31,9 +31,19 @@ const DEFAULT_VOICE_ID = "JBFqnCBsd6RMkjVDRZzb";
 const DEFAULT_MODEL_ID = "eleven_multilingual_v2";
 const OUTPUT_FORMAT = process.env.ELEVENLABS_OUTPUT_FORMAT ?? "mp3_44100_128";
 
+const INTRO = {
+  brand: "Definedle",
+  line1: "Can you guess the word from the definition alone?",
+  line2: "Only 1% get the last question correct",
+  voiceFile: "intro.mp3",
+  durationSec: 5.5,
+  line2AtSec: 2.4,
+};
+
 const args = process.argv.slice(2);
 const argSet = new Set(args);
 const dryRun = argSet.has("--dry-run");
+const introOnly = argSet.has("--intro-only");
 const onlyArg = args.find((a) => a.startsWith("--only="));
 const batchArg = args.find((a) => a.startsWith("--batch="));
 const onlyIndexes = onlyArg
@@ -268,6 +278,75 @@ function loadJobs() {
   };
 }
 
+function estimateAudioDurationSec(alignment) {
+  if (!alignment?.character_end_times_seconds?.length) return null;
+  const ends = alignment.character_end_times_seconds;
+  return ends[ends.length - 1];
+}
+
+function findPhraseStartSec(phrase, alignment) {
+  if (!alignment?.characters?.length) return null;
+  const { characters, character_start_times_seconds: starts } = alignment;
+  const { norm, map } = buildNormIndexMap(characters);
+  const at = norm.indexOf(normalize(phrase));
+  if (at === -1) return null;
+  return starts[map[at] ?? 0] ?? null;
+}
+
+async function generateIntroVoice(manifest) {
+  const introText = `${INTRO.line1} ${INTRO.line2}`;
+  const voiceFile = INTRO.voiceFile;
+  console.log(`\n[intro] ${voiceFile}`);
+  console.log(`  text: ${introText}`);
+
+  if (dryRun) {
+    return {
+      introVoice: voiceFile,
+      introDurationSec: INTRO.durationSec,
+      introLine2AtSec: INTRO.line2AtSec,
+    };
+  }
+
+  const result = await synthesizeWithTimestamps(introText);
+  const audioBuffer = Buffer.from(result.audio_base64, "base64");
+  const outPath = resolve(PUBLIC_DIR, voiceFile);
+  writeFileSync(outPath, audioBuffer);
+  console.log(`  wrote ${outPath} (${audioBuffer.length} bytes)`);
+
+  const alignment = result.normalized_alignment ?? result.alignment;
+  const spoken = estimateAudioDurationSec(alignment);
+  const line2At =
+    findPhraseStartSec(INTRO.line2, alignment) ?? INTRO.line2AtSec;
+  const introDurationSec = Number(
+    Math.max((spoken ?? INTRO.durationSec) + 0.45, 4.5).toFixed(2),
+  );
+
+  console.log(
+    `  duration=${introDurationSec}s  line2At=${Number(line2At).toFixed(2)}s`,
+  );
+
+  const meta = {
+    introVoice: voiceFile,
+    introDurationSec,
+    introLine2AtSec: Number(Number(line2At).toFixed(2)),
+  };
+
+  if (manifest) {
+    manifest.title = INTRO.brand;
+    manifest.introVoice = meta.introVoice;
+    manifest.introDurationSec = meta.introDurationSec;
+    manifest.introLine2AtSec = meta.introLine2AtSec;
+    for (const batch of manifest.batches ?? []) {
+      batch.title = INTRO.brand;
+      batch.introVoice = meta.introVoice;
+      batch.introDurationSec = meta.introDurationSec;
+      batch.introLine2AtSec = meta.introLine2AtSec;
+    }
+  }
+
+  return meta;
+}
+
 async function main() {
   if (!dryRun && !API_KEY) {
     console.error(
@@ -286,11 +365,62 @@ async function main() {
   );
   console.log(`Source: ${loaded.mode}`);
 
+  // Always (re)generate the shared cold-open intro with the same voice.
+  const introMeta = await generateIntroVoice(
+    loaded.mode === "batches" ? loaded.manifest : null,
+  );
+
+  if (loaded.mode === "questions") {
+    const data = JSON.parse(readFileSync(QUESTIONS_PATH, "utf8"));
+    data.title = INTRO.brand;
+    Object.assign(data, introMeta);
+    writeFileSync(QUESTIONS_PATH, `${JSON.stringify(data, null, 2)}\n`);
+  }
+
+  if (introOnly) {
+    if (!dryRun) {
+      if (loaded.mode === "batches") {
+        loaded.manifest.title = INTRO.brand;
+        loaded.manifest.introVoice = introMeta.introVoice;
+        loaded.manifest.introDurationSec = introMeta.introDurationSec;
+        loaded.manifest.introLine2AtSec = introMeta.introLine2AtSec;
+        for (const batch of loaded.manifest.batches) {
+          batch.title = INTRO.brand;
+          batch.introVoice = introMeta.introVoice;
+          batch.introDurationSec = introMeta.introDurationSec;
+          batch.introLine2AtSec = introMeta.introLine2AtSec;
+        }
+        loaded.save();
+        if (loaded.manifest.batches[0]) {
+          const first = loaded.manifest.batches[0];
+          writeFileSync(
+            QUESTIONS_PATH,
+            `${JSON.stringify(
+              {
+                title: INTRO.brand,
+                scorePrompt: first.scorePrompt,
+                scoreSubtext: first.scoreSubtext,
+                introVoice: introMeta.introVoice,
+                introDurationSec: introMeta.introDurationSec,
+                introLine2AtSec: introMeta.introLine2AtSec,
+                questions: first.questions,
+              },
+              null,
+              2,
+            )}\n`,
+          );
+        }
+      }
+      console.log("\nIntro-only voice saved.");
+    }
+    return;
+  }
+
   const selected = loaded.jobs.filter((job) =>
     onlyIndexes ? onlyIndexes.includes(job.globalIndex) : true,
   );
 
-  if (selected.length === 0) {
+  if (selected.length === 0 && onlyIndexes) {
     console.error("No questions matched your filters.");
     process.exit(1);
   }
@@ -302,9 +432,7 @@ async function main() {
       question.segments?.map((s) => s.text).filter(Boolean) ??
       autoPhrases(question.definition);
 
-    console.log(
-      `\n[${globalIndex + 1}] ${batchId} → ${voiceFile}`,
-    );
+    console.log(`\n[${globalIndex + 1}] ${batchId} → ${voiceFile}`);
     console.log(`  text: ${question.definition}`);
     console.log(`  phrases: ${phrases.map((p) => `"${p}"`).join(" | ")}`);
 
@@ -327,9 +455,45 @@ async function main() {
   }
 
   if (!dryRun) {
+    if (loaded.mode === "batches") {
+      loaded.manifest.title = INTRO.brand;
+      loaded.manifest.introVoice = introMeta.introVoice;
+      loaded.manifest.introDurationSec = introMeta.introDurationSec;
+      loaded.manifest.introLine2AtSec = introMeta.introLine2AtSec;
+      for (const batch of loaded.manifest.batches) {
+        batch.title = INTRO.brand;
+        batch.introVoice = introMeta.introVoice;
+        batch.introDurationSec = introMeta.introDurationSec;
+        batch.introLine2AtSec = introMeta.introLine2AtSec;
+        batch.scoreSubtext =
+          batch.scoreSubtext ?? "Subscribe for daily word quizzes";
+      }
+    }
     loaded.save();
-    console.log(`\nSaved updated timings.`);
+    // Also patch questions.json intro fields when using batches.
+    if (loaded.mode === "batches" && loaded.manifest.batches[0]) {
+      const first = loaded.manifest.batches[0];
+      writeFileSync(
+        QUESTIONS_PATH,
+        `${JSON.stringify(
+          {
+            title: INTRO.brand,
+            scorePrompt: first.scorePrompt,
+            scoreSubtext: first.scoreSubtext,
+            introVoice: introMeta.introVoice,
+            introDurationSec: introMeta.introDurationSec,
+            introLine2AtSec: introMeta.introLine2AtSec,
+            questions: first.questions,
+          },
+          null,
+          2,
+        )}\n`,
+      );
+    }
+    console.log(`\nSaved updated timings + intro voice.`);
     console.log("Next: npm run dev   or   npm run render:all");
+  } else {
+    console.log("\nDry run complete (including intro plan).");
   }
 }
 

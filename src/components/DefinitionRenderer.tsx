@@ -24,7 +24,7 @@ export const DefinitionRenderer: React.FC<Props> = ({
   frame,
   narrationStart,
   fadeOut = 0,
-  fixedHeight = 430,
+  fixedHeight = 400,
 }) => {
   const { fps } = useVideoConfig();
 
