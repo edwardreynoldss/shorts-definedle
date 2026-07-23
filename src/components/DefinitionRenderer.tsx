@@ -1,15 +1,13 @@
 import React from "react";
-import { interpolate, spring, useVideoConfig } from "remotion";
+import { interpolate } from "remotion";
 import { colors } from "../theme";
 import type { VoiceSegment } from "../types";
 import { VoiceSyncText } from "./VoiceSyncText";
 
 type Props = {
   segments: VoiceSegment[];
-  /** Frame relative to question start. */
-  frame: number;
-  /** Narration start frame within the question. */
-  narrationStart: number;
+  /** Frame relative to narration / audio start. */
+  narrationFrame: number;
   /** 0–1 fade-out when revealing the answer. */
   fadeOut?: number;
   /** Locked card height so layout never jumps. */
@@ -18,24 +16,15 @@ type Props = {
 
 /**
  * Definition card with voice-synced word-by-word reveal (fixed size).
+ * Stays fully opaque during narration so text is never gated by a spring.
  */
 export const DefinitionRenderer: React.FC<Props> = ({
   segments,
-  frame,
-  narrationStart,
+  narrationFrame,
   fadeOut = 0,
   fixedHeight = 400,
 }) => {
-  const { fps } = useVideoConfig();
-
-  const enter = spring({
-    frame: Math.max(0, frame - 2),
-    fps,
-    config: { damping: 18, stiffness: 140 },
-  });
-
-  const opacity =
-    interpolate(enter, [0, 1], [0, 1]) * interpolate(fadeOut, [0, 1], [1, 0]);
+  const opacity = interpolate(fadeOut, [0, 1], [1, 0]);
 
   return (
     <div
@@ -53,12 +42,13 @@ export const DefinitionRenderer: React.FC<Props> = ({
         alignItems: "center",
         justifyContent: "center",
         boxSizing: "border-box",
+        overflow: "visible",
       }}
     >
       <VoiceSyncText
         segments={segments}
-        frame={Math.max(0, frame - narrationStart)}
-        fontSize={64}
+        frame={Math.max(0, narrationFrame)}
+        fontSize={58}
       />
     </div>
   );

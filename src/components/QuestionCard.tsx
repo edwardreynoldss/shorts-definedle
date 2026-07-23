@@ -10,7 +10,7 @@ import {
   useVideoConfig,
 } from "remotion";
 import { colors, LAYOUT } from "../theme";
-import type { QuizQuestion } from "../types";
+import type { QuizQuestion, VoiceSegment } from "../types";
 import {
   getDifficultyLabel,
   type QuestionTimeline,
@@ -26,6 +26,26 @@ type Props = {
   total: number;
   title: string;
   timeline: QuestionTimeline;
+};
+
+/** Audio + definition text share one Sequence clock (frame 0 = voice start). */
+const NarrationLayer: React.FC<{
+  voice: string;
+  segments: VoiceSegment[];
+  fadeOut: number;
+}> = ({ voice, segments, fadeOut }) => {
+  const frame = useCurrentFrame();
+  return (
+    <>
+      <Audio src={staticFile(voice)} volume={1} />
+      <DefinitionRenderer
+        segments={segments}
+        narrationFrame={frame}
+        fadeOut={fadeOut}
+        fixedHeight={LAYOUT.cardHeight}
+      />
+    </>
+  );
 };
 
 /**
@@ -85,10 +105,6 @@ export const QuestionCard: React.FC<Props> = ({
         color: colors.text,
       }}
     >
-      <Sequence from={timeline.offsets.narration} layout="none">
-        <Audio src={staticFile(question.voice)} volume={1} />
-      </Sequence>
-
       <Sequence from={timeline.offsets.reveal} layout="none">
         <Audio src={staticFile("success.mp3")} volume={0.7} />
       </Sequence>
@@ -150,7 +166,8 @@ export const QuestionCard: React.FC<Props> = ({
         </div>
       </div>
 
-      {/* Definition / answer slot — fixed size */}
+      {/* Definition / answer slot — fixed size.
+          Voice + words share one Sequence so their clocks cannot drift. */}
       <div
         style={{
           position: "absolute",
@@ -164,13 +181,13 @@ export const QuestionCard: React.FC<Props> = ({
         }}
       >
         {showDefinition ? (
-          <DefinitionRenderer
-            segments={question.segments}
-            frame={frame}
-            narrationStart={timeline.offsets.narration}
-            fadeOut={definitionFade}
-            fixedHeight={LAYOUT.cardHeight}
-          />
+          <Sequence from={timeline.offsets.narration} layout="none">
+            <NarrationLayer
+              voice={question.voice}
+              segments={question.segments}
+              fadeOut={definitionFade}
+            />
+          </Sequence>
         ) : null}
 
         {inReveal ? (

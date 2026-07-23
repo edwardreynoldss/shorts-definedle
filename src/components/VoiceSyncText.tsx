@@ -1,19 +1,19 @@
 import React from "react";
-import { interpolate, useVideoConfig } from "remotion";
+import { useVideoConfig } from "remotion";
 import { colors } from "../theme";
 import type { VoiceSegment } from "../types";
-import { framesToSec } from "../utils/timing";
 
 type Props = {
   segments: VoiceSegment[];
-  /** Local frame relative to narration start. */
+  /** Local frame relative to narration / audio start (0 = first audio frame). */
   frame: number;
   fontSize?: number;
 };
 
 /**
- * Reveal definition text one word at a time, locked to narration timing.
- * All words stay in layout (opacity 0 until spoken) so the card never reflows.
+ * Karaoke-style reveal: only spoken words are mounted, timed to the voice
+ * track. Real space characters are required so the line wraps (margin-only
+ * gaps do not create wrap opportunities and get clipped by AbsoluteFill).
  */
 export const VoiceSyncText: React.FC<Props> = ({
   segments,
@@ -21,10 +21,22 @@ export const VoiceSyncText: React.FC<Props> = ({
   fontSize = 64,
 }) => {
   const { fps } = useVideoConfig();
-  // Slight lead so each word pops as speech begins (not after it ends).
-  const TEXT_LEAD_SEC = 0.18;
-  const t = framesToSec(frame) + TEXT_LEAD_SEC;
-  const fadeFrames = 2;
+  // Pull words forward so they land as the voice hits them, not after.
+  const TEXT_LEAD_SEC = 0.45;
+  const t = frame / fps + TEXT_LEAD_SEC;
+
+  let visibleCount = 0;
+  for (let i = 0; i < segments.length; i++) {
+    if (t >= segments[i].time) visibleCount = i + 1;
+    else break;
+  }
+
+  // First audio frame: always show the first word immediately.
+  if (frame >= 0 && visibleCount === 0 && segments.length > 0) {
+    visibleCount = 1;
+  }
+
+  const shown = segments.slice(0, visibleCount);
 
   return (
     <div
@@ -35,32 +47,16 @@ export const VoiceSyncText: React.FC<Props> = ({
         lineHeight: 1.35,
         textAlign: "center",
         width: "100%",
+        whiteSpace: "normal",
+        overflowWrap: "break-word",
       }}
     >
-      {segments.map((segment, i) => {
-        const startFrame = Math.round(segment.time * fps);
-        const localFrame = frame - startFrame + Math.round(TEXT_LEAD_SEC * fps);
-        const visible = t >= segment.time;
-        const opacity = visible
-          ? interpolate(localFrame, [0, fadeFrames], [0, 1], {
-              extrapolateLeft: "clamp",
-              extrapolateRight: "clamp",
-            })
-          : 0;
-
-        return (
-          <span
-            key={`${segment.time}-${i}-${segment.text}`}
-            style={{
-              display: "inline",
-              opacity,
-              marginRight: i < segments.length - 1 ? 14 : 0,
-            }}
-          >
-            {segment.text}
-          </span>
-        );
-      })}
+      {shown.map((segment, i) => (
+        <React.Fragment key={`${i}-${segment.text}`}>
+          {i > 0 ? " " : null}
+          <span style={{ display: "inline" }}>{segment.text}</span>
+        </React.Fragment>
+      ))}
     </div>
   );
 };

@@ -8,14 +8,16 @@ export const secToFrames = (seconds: number): number =>
 
 export const framesToSec = (frames: number): number => frames / fps;
 
-/** Last segment time + buffer so narration feels finished before countdown. */
+/** Last segment time + buffer so narration feels finished before countdown.
+ *  Prefer finishing the read-along before the voice ends. */
 export const getNarrationDurationSec = (question: QuizQuestion): number => {
   if (question.segments.length === 0) {
     return 2.4;
   }
 
   const last = question.segments[question.segments.length - 1];
-  return Math.max(last.time + 0.4, 2.1);
+  // Hold a beat after the final word so viewers can read it, then countdown.
+  return Math.max(last.time + 0.55, 2.1);
 };
 
 export const getDifficultyLabel = (
