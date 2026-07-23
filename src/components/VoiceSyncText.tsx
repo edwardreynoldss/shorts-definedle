@@ -12,9 +12,8 @@ type Props = {
 };
 
 /**
- * Reveal phrases in sync with narration.
- * All phrases stay laid out (invisible until spoken) so the card never reflows.
- * Uses a short fade — not a slow spring — so text doesn't lag the voice.
+ * Reveal definition text one word at a time, locked to narration timing.
+ * All words stay in layout (opacity 0 until spoken) so the card never reflows.
  */
 export const VoiceSyncText: React.FC<Props> = ({
   segments,
@@ -22,10 +21,10 @@ export const VoiceSyncText: React.FC<Props> = ({
   fontSize = 64,
 }) => {
   const { fps } = useVideoConfig();
-  // Slight lead so text appears as the phrase starts, not after it.
-  const TEXT_LEAD_SEC = 0.06;
+  // Slight lead so each word pops as speech begins (not after it ends).
+  const TEXT_LEAD_SEC = 0.18;
   const t = framesToSec(frame) + TEXT_LEAD_SEC;
-  const fadeFrames = 3;
+  const fadeFrames = 2;
 
   return (
     <div
@@ -51,11 +50,11 @@ export const VoiceSyncText: React.FC<Props> = ({
 
         return (
           <span
-            key={`${segment.time}-${i}`}
+            key={`${segment.time}-${i}-${segment.text}`}
             style={{
               display: "inline",
               opacity,
-              marginRight: i < segments.length - 1 ? 12 : 0,
+              marginRight: i < segments.length - 1 ? 14 : 0,
             }}
           >
             {segment.text}

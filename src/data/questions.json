@@ -14,16 +14,36 @@
       "difficultyLabel": "70% Question",
       "segments": [
         {
-          "text": "A person",
-          "time": 0.3
+          "text": "A",
+          "time": 0.159
         },
         {
-          "text": "who travels",
-          "time": 1.3
+          "text": "person",
+          "time": 0.299
         },
         {
-          "text": "without a permanent home.",
-          "time": 2.3
+          "text": "who",
+          "time": 0.58
+        },
+        {
+          "text": "travels",
+          "time": 0.759
+        },
+        {
+          "text": "without",
+          "time": 1.339
+        },
+        {
+          "text": "a",
+          "time": 1.679
+        },
+        {
+          "text": "permanent",
+          "time": 1.74
+        },
+        {
+          "text": "home.",
+          "time": 2.22
         }
       ]
     },
@@ -35,16 +55,32 @@
       "difficultyLabel": "40% Question",
       "segments": [
         {
-          "text": "A sudden",
-          "time": 0.3
+          "text": "A",
+          "time": 0.099
         },
         {
-          "text": "and complete failure",
-          "time": 1.3
+          "text": "sudden",
+          "time": 0.219
         },
         {
-          "text": "or collapse.",
-          "time": 2.3
+          "text": "and",
+          "time": 0.539
+        },
+        {
+          "text": "complete",
+          "time": 0.659
+        },
+        {
+          "text": "failure",
+          "time": 1.199
+        },
+        {
+          "text": "or",
+          "time": 1.68
+        },
+        {
+          "text": "collapse.",
+          "time": 1.839
         }
       ]
     },
@@ -56,16 +92,32 @@
       "difficultyLabel": "10% Question",
       "segments": [
         {
-          "text": "Something that is",
-          "time": 0.3
+          "text": "Something",
+          "time": 0.079
         },
         {
-          "text": "extremely large",
-          "time": 1.3
+          "text": "that",
+          "time": 0.46
         },
         {
-          "text": "or impressive.",
-          "time": 2.3
+          "text": "is",
+          "time": 0.58
+        },
+        {
+          "text": "extremely",
+          "time": 0.799
+        },
+        {
+          "text": "large",
+          "time": 1.48
+        },
+        {
+          "text": "or",
+          "time": 2.039
+        },
+        {
+          "text": "impressive.",
+          "time": 2.22
         }
       ]
     },
@@ -77,12 +129,32 @@
       "difficultyLabel": "1% Question",
       "segments": [
         {
-          "text": "A short, memorable phrase",
-          "time": 0.3
+          "text": "A",
+          "time": 0.239
         },
         {
-          "text": "used in advertising.",
-          "time": 1.3
+          "text": "short,",
+          "time": 0.28
+        },
+        {
+          "text": "memorable",
+          "time": 0.74
+        },
+        {
+          "text": "phrase",
+          "time": 1.299
+        },
+        {
+          "text": "used",
+          "time": 1.86
+        },
+        {
+          "text": "in",
+          "time": 2.059
+        },
+        {
+          "text": "advertising.",
+          "time": 2.22
         }
       ]
     }

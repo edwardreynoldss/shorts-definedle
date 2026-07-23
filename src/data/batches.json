@@ -26,16 +26,36 @@
           "difficultyLabel": "70% Question",
           "segments": [
             {
-              "text": "A person",
-              "time": 0.3
+              "text": "A",
+              "time": 0.159
             },
             {
-              "text": "who travels",
-              "time": 1.3
+              "text": "person",
+              "time": 0.299
             },
             {
-              "text": "without a permanent home.",
-              "time": 2.3
+              "text": "who",
+              "time": 0.58
+            },
+            {
+              "text": "travels",
+              "time": 0.759
+            },
+            {
+              "text": "without",
+              "time": 1.339
+            },
+            {
+              "text": "a",
+              "time": 1.679
+            },
+            {
+              "text": "permanent",
+              "time": 1.74
+            },
+            {
+              "text": "home.",
+              "time": 2.22
             }
           ]
         },
@@ -47,16 +67,32 @@
           "difficultyLabel": "40% Question",
           "segments": [
             {
-              "text": "A sudden",
-              "time": 0.3
+              "text": "A",
+              "time": 0.099
             },
             {
-              "text": "and complete failure",
-              "time": 1.3
+              "text": "sudden",
+              "time": 0.219
             },
             {
-              "text": "or collapse.",
-              "time": 2.3
+              "text": "and",
+              "time": 0.539
+            },
+            {
+              "text": "complete",
+              "time": 0.659
+            },
+            {
+              "text": "failure",
+              "time": 1.199
+            },
+            {
+              "text": "or",
+              "time": 1.68
+            },
+            {
+              "text": "collapse.",
+              "time": 1.839
             }
           ]
         },
@@ -68,16 +104,32 @@
           "difficultyLabel": "10% Question",
           "segments": [
             {
-              "text": "Something that is",
-              "time": 0.3
+              "text": "Something",
+              "time": 0.079
             },
             {
-              "text": "extremely large",
-              "time": 1.3
+              "text": "that",
+              "time": 0.46
             },
             {
-              "text": "or impressive.",
-              "time": 2.3
+              "text": "is",
+              "time": 0.58
+            },
+            {
+              "text": "extremely",
+              "time": 0.799
+            },
+            {
+              "text": "large",
+              "time": 1.48
+            },
+            {
+              "text": "or",
+              "time": 2.039
+            },
+            {
+              "text": "impressive.",
+              "time": 2.22
             }
           ]
         },
@@ -89,12 +141,32 @@
           "difficultyLabel": "1% Question",
           "segments": [
             {
-              "text": "A short, memorable phrase",
-              "time": 0.3
+              "text": "A",
+              "time": 0.239
             },
             {
-              "text": "used in advertising.",
-              "time": 1.3
+              "text": "short,",
+              "time": 0.28
+            },
+            {
+              "text": "memorable",
+              "time": 0.74
+            },
+            {
+              "text": "phrase",
+              "time": 1.299
+            },
+            {
+              "text": "used",
+              "time": 1.86
+            },
+            {
+              "text": "in",
+              "time": 2.059
+            },
+            {
+              "text": "advertising.",
+              "time": 2.22
             }
           ]
         }
@@ -124,16 +196,44 @@
           "difficultyLabel": "70% Question",
           "segments": [
             {
-              "text": "A place where books",
-              "time": 0.3
+              "text": "A",
+              "time": 0.046
             },
             {
-              "text": "are kept for reading",
-              "time": 1.3
+              "text": "place",
+              "time": 0.163
             },
             {
-              "text": "or borrowing.",
-              "time": 2.3
+              "text": "where",
+              "time": 0.453
+            },
+            {
+              "text": "books",
+              "time": 0.65
+            },
+            {
+              "text": "are",
+              "time": 0.906
+            },
+            {
+              "text": "kept",
+              "time": 1.045
+            },
+            {
+              "text": "for",
+              "time": 1.324
+            },
+            {
+              "text": "reading",
+              "time": 1.509
+            },
+            {
+              "text": "or",
+              "time": 1.95
+            },
+            {
+              "text": "borrowing.",
+              "time": 2.101
             }
           ]
         },
@@ -145,16 +245,28 @@
           "difficultyLabel": "40% Question",
           "segments": [
             {
-              "text": "A device",
-              "time": 0.3
+              "text": "A",
+              "time": 0.035
             },
             {
-              "text": "used to",
-              "time": 1.3
+              "text": "device",
+              "time": 0.151
             },
             {
-              "text": "take photographs.",
-              "time": 2.3
+              "text": "used",
+              "time": 0.604
+            },
+            {
+              "text": "to",
+              "time": 0.836
+            },
+            {
+              "text": "take",
+              "time": 0.952
+            },
+            {
+              "text": "photographs.",
+              "time": 1.173
             }
           ]
         },
@@ -166,16 +278,40 @@
           "difficultyLabel": "10% Question",
           "segments": [
             {
-              "text": "The star at",
-              "time": 0.3
+              "text": "The",
+              "time": 0.058
             },
             {
-              "text": "the center of",
-              "time": 1.3
+              "text": "star",
+              "time": 0.232
             },
             {
-              "text": "our solar system.",
-              "time": 2.3
+              "text": "at",
+              "time": 0.72
+            },
+            {
+              "text": "the",
+              "time": 0.859
+            },
+            {
+              "text": "center",
+              "time": 0.975
+            },
+            {
+              "text": "of",
+              "time": 1.289
+            },
+            {
+              "text": "our",
+              "time": 1.382
+            },
+            {
+              "text": "solar",
+              "time": 1.544
+            },
+            {
+              "text": "system.",
+              "time": 1.916
             }
           ]
         },
@@ -187,16 +323,28 @@
           "difficultyLabel": "1% Question",
           "segments": [
             {
-              "text": "A meal",
-              "time": 0.3
+              "text": "A",
+              "time": 0.035
             },
             {
-              "text": "eaten in",
-              "time": 1.3
+              "text": "meal",
+              "time": 0.174
             },
             {
-              "text": "the morning.",
-              "time": 2.3
+              "text": "eaten",
+              "time": 0.511
+            },
+            {
+              "text": "in",
+              "time": 0.789
+            },
+            {
+              "text": "the",
+              "time": 0.871
+            },
+            {
+              "text": "morning.",
+              "time": 0.975
             }
           ]
         }

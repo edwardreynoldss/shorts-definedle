@@ -191,6 +191,94 @@ function segmentsFromAlignment(phrases, alignment) {
   return segments;
 }
 
+function wordsFromCharAlignment(alignment) {
+  if (!alignment?.characters?.length) return [];
+
+  const chars = alignment.characters;
+  const starts = alignment.character_start_times_seconds;
+  /** @type {{ text: string, time: number }[]} */
+  const words = [];
+  let current = "";
+  let wordStart = null;
+
+  const flush = () => {
+    const text = current.trim();
+    if (!text) {
+      current = "";
+      wordStart = null;
+      return;
+    }
+    words.push({
+      text,
+      time: Number((wordStart ?? 0).toFixed(3)),
+    });
+    current = "";
+    wordStart = null;
+  };
+
+  for (let i = 0; i < chars.length; i++) {
+    const ch = chars[i];
+    if (/\s/.test(ch)) {
+      flush();
+      continue;
+    }
+    if (wordStart === null) wordStart = starts[i] ?? 0;
+    current += ch;
+  }
+  flush();
+
+  for (let i = 1; i < words.length; i++) {
+    if (words[i].time <= words[i - 1].time) {
+      words[i].time = Number((words[i - 1].time + 0.05).toFixed(3));
+    }
+  }
+
+  return words;
+}
+
+function wordsFromForcedAlignment(result) {
+  if (!result?.words?.length) return [];
+  return result.words
+    .map((w) => ({
+      text: String(w.text ?? "").trim(),
+      time: Number((w.start ?? 0).toFixed(3)),
+    }))
+    .filter((w) => w.text.length > 0);
+}
+
+function isWordLevelSegments(segments) {
+  if (!Array.isArray(segments) || segments.length === 0) return false;
+  return segments.every(
+    (s) => String(s.text ?? "").trim().split(/\s+/).filter(Boolean).length === 1,
+  );
+}
+
+async function forceAlignAudio(filePath, text) {
+  const bytes = readFileSync(filePath);
+  const form = new FormData();
+  form.append(
+    "file",
+    new Blob([bytes], { type: "audio/mpeg" }),
+    filePath.split("/").pop() || "voice.mp3",
+  );
+  form.append("text", text);
+
+  const res = await fetch(`${API_BASE}/v1/forced-alignment`, {
+    method: "POST",
+    headers: {
+      "xi-api-key": API_KEY,
+    },
+    body: form,
+  });
+
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Forced alignment ${res.status}: ${body}`);
+  }
+
+  return res.json();
+}
+
 async function synthesizeWithTimestamps(text) {
   const url = `${API_BASE}/v1/text-to-speech/${VOICE_ID}/with-timestamps?output_format=${OUTPUT_FORMAT}`;
   const res = await fetch(url, {
@@ -473,43 +561,94 @@ async function main() {
 
   let created = 0;
   let skipped = 0;
+  let aligned = 0;
 
   for (const job of selected) {
     const { question, globalIndex, batchId } = job;
     const voiceFile = question.voice || `voice${globalIndex + 1}.mp3`;
-    const phrases =
-      question.segments?.map((s) => s.text).filter(Boolean) ??
-      autoPhrases(question.definition);
+    const outPath = resolve(PUBLIC_DIR, voiceFile);
+    const hasAudio = !force && voiceFileExists(voiceFile);
+    const hasWordTiming = isWordLevelSegments(question.segments);
 
     console.log(`\n[${globalIndex + 1}] ${batchId} → ${voiceFile}`);
     console.log(`  text: ${question.definition}`);
-    console.log(`  phrases: ${phrases.map((p) => `"${p}"`).join(" | ")}`);
 
-    if (!force && voiceFileExists(voiceFile)) {
-      console.log("  skip (already exists)");
+    // Keep existing audio; refresh word timings when they are missing / phrase-level.
+    if (hasAudio && hasWordTiming) {
+      console.log(
+        `  skip (audio + ${question.segments.length} word timings already present)`,
+      );
       skipped += 1;
       continue;
     }
 
     if (dryRun) {
-      console.log("  would generate");
+      console.log(
+        hasAudio
+          ? "  would force-align existing audio → word timings"
+          : "  would generate TTS + word timings",
+      );
       created += 1;
       continue;
     }
 
-    const result = await synthesizeWithTimestamps(question.definition);
-    const audioBuffer = Buffer.from(result.audio_base64, "base64");
-    const outPath = resolve(PUBLIC_DIR, voiceFile);
-    writeFileSync(outPath, audioBuffer);
-    console.log(`  wrote ${outPath} (${audioBuffer.length} bytes)`);
+    let segments = [];
 
-    const alignment = result.normalized_alignment ?? result.alignment;
-    const segments = segmentsFromAlignment(phrases, alignment);
+    if (hasAudio) {
+      console.log("  audio exists — force-aligning for word-by-word sync");
+      try {
+        const fa = await forceAlignAudio(outPath, question.definition);
+        segments = wordsFromForcedAlignment(fa);
+        if (segments.length === 0) {
+          throw new Error("forced alignment returned no words");
+        }
+        aligned += 1;
+      } catch (err) {
+        console.warn(`  forced alignment failed: ${err.message}`);
+        console.warn("  regenerating TTS with timestamps instead…");
+        const result = await synthesizeWithTimestamps(question.definition);
+        const audioBuffer = Buffer.from(result.audio_base64, "base64");
+        writeFileSync(outPath, audioBuffer);
+        console.log(`  wrote ${outPath} (${audioBuffer.length} bytes)`);
+        const alignment = result.normalized_alignment ?? result.alignment;
+        segments = wordsFromCharAlignment(alignment);
+        created += 1;
+      }
+    } else {
+      const result = await synthesizeWithTimestamps(question.definition);
+      const audioBuffer = Buffer.from(result.audio_base64, "base64");
+      writeFileSync(outPath, audioBuffer);
+      console.log(`  wrote ${outPath} (${audioBuffer.length} bytes)`);
+
+      const alignment = result.normalized_alignment ?? result.alignment;
+      segments = wordsFromCharAlignment(alignment);
+
+      // Prefer forced-alignment word starts when available (more accurate).
+      if (segments.length === 0) {
+        try {
+          const fa = await forceAlignAudio(outPath, question.definition);
+          segments = wordsFromForcedAlignment(fa);
+        } catch {
+          const phrases = autoPhrases(question.definition);
+          segments = segmentsFromAlignment(phrases, alignment);
+        }
+      }
+      created += 1;
+    }
+
+    if (segments.length === 0) {
+      console.warn("  warning: no segments produced — using even fallback");
+      const words = question.definition.trim().split(/\s+/).filter(Boolean);
+      segments = words.map((text, i) => ({
+        text,
+        time: Number((0.08 + i * 0.28).toFixed(3)),
+      }));
+    }
+
     question.voice = voiceFile;
     question.segments = segments;
-    created += 1;
     console.log(
-      "  segments:",
+      "  words:",
       segments.map((s) => `${s.time}s "${s.text}"`).join(", "),
     );
   }
@@ -538,7 +677,7 @@ async function main() {
   }
 
   console.log(
-    `\nDone. generated=${created} skipped=${skipped}${force ? " (forced)" : ""}`,
+    `\nDone. generated=${created} aligned=${aligned} skipped=${skipped}${force ? " (forced)" : ""}`,
   );
   console.log("Intro is separate: npm run voices:intro");
   console.log("Next: npm run dev   or   npm run render:all");
