@@ -1,5 +1,5 @@
 import React from "react";
-import { interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import { useCurrentFrame, useVideoConfig } from "remotion";
 import { colors } from "../theme";
 
 type Props = {
@@ -9,7 +9,7 @@ type Props = {
 };
 
 /**
- * Progress marker: Question N / total + dots.
+ * Progress marker: Question N / total + dots (no positional animation).
  */
 export const ProgressDots: React.FC<Props> = ({
   total,
@@ -19,12 +19,6 @@ export const ProgressDots: React.FC<Props> = ({
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const enter = spring({
-    frame,
-    fps,
-    config: { damping: 16, stiffness: 120 },
-  });
-
   return (
     <div
       style={{
@@ -32,8 +26,6 @@ export const ProgressDots: React.FC<Props> = ({
         flexDirection: "column",
         alignItems: "center",
         gap: 18,
-        opacity: interpolate(enter, [0, 1], [0, 1]),
-        transform: `translateY(${interpolate(enter, [0, 1], [24, 0])}px)`,
       }}
     >
       <div
@@ -50,12 +42,9 @@ export const ProgressDots: React.FC<Props> = ({
         {Array.from({ length: total }).map((_, i) => {
           const active = i === currentIndex;
           const done = i < currentIndex;
+          // Soft pulse from frame only — no layout shift.
           const pulse = active
-            ? spring({
-                frame,
-                fps,
-                config: { damping: 12, stiffness: 140 },
-              })
+            ? 1 + 0.06 * Math.sin((frame / fps) * Math.PI * 2)
             : 1;
 
           return (
@@ -67,7 +56,7 @@ export const ProgressDots: React.FC<Props> = ({
                 borderRadius: "50%",
                 backgroundColor:
                   active || done ? colors.accent : "rgba(17,24,39,0.18)",
-                transform: `scale(${active ? 0.9 + pulse * 0.15 : 1})`,
+                transform: `scale(${pulse})`,
               }}
             />
           );

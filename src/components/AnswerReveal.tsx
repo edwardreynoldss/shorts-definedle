@@ -9,7 +9,7 @@ type Props = {
 };
 
 /**
- * Answer card expand + marker-green emphasis on the whiteboard.
+ * Answer card — same footprint as the definition card.
  */
 export const AnswerReveal: React.FC<Props> = ({ answer, frame }) => {
   const { fps } = useVideoConfig();
@@ -30,7 +30,7 @@ export const AnswerReveal: React.FC<Props> = ({ answer, frame }) => {
     config: { damping: 11, stiffness: 160 },
   });
 
-  const scale = interpolate(enter, [0, 1], [0.72, 1]);
+  const scale = interpolate(enter, [0, 1], [0.92, 1]);
   const opacity = interpolate(enter, [0, 1], [0, 1]);
 
   return (
@@ -39,8 +39,8 @@ export const AnswerReveal: React.FC<Props> = ({ answer, frame }) => {
         position: "relative",
         width: "90%",
         maxWidth: 920,
-        minHeight: 360,
-        padding: "60px 48px",
+        height: 430,
+        padding: "48px 48px",
         borderRadius: 36,
         background: "rgba(240,253,244,0.95)",
         border: `3px solid ${colors.correct}`,
@@ -50,6 +50,7 @@ export const AnswerReveal: React.FC<Props> = ({ answer, frame }) => {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        boxSizing: "border-box",
       }}
     >
       <div
@@ -59,7 +60,8 @@ export const AnswerReveal: React.FC<Props> = ({ answer, frame }) => {
           letterSpacing: 5,
           textTransform: "uppercase",
           color: colors.correct,
-          transform: `scale(${interpolate(answerPop, [0, 1], [0.6, 1])})`,
+          transform: `scale(${interpolate(answerPop, [0, 1], [0.75, 1])})`,
+          textAlign: "center",
         }}
       >
         {answer}

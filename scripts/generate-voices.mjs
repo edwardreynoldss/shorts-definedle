@@ -91,7 +91,11 @@ function autoPhrases(definition) {
 }
 
 function normalize(text) {
-  return text.toLowerCase().replace(/\s+/g, " ").trim();
+  return text
+    .toLowerCase()
+    .replace(/["""''.,!?;:()[\]{}]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function buildNormIndexMap(characters) {
@@ -110,6 +114,12 @@ function buildNormIndexMap(characters) {
       lastWasSpace = true;
       continue;
     }
+
+    // Skip punctuation in the normalized stream so phrase matching is stable.
+    if (/["""''.,!?;:()[\]{}]/.test(ch)) {
+      continue;
+    }
+
     norm += ch.toLowerCase();
     map.push(i);
     lastWasSpace = false;
@@ -122,7 +132,7 @@ function segmentsFromAlignment(phrases, alignment) {
   if (!alignment?.characters?.length) {
     return phrases.map((text, i) => ({
       text,
-      time: Number((0.25 + i * 1.1).toFixed(2)),
+      time: Number((0.2 + i * 1.0).toFixed(3)),
     }));
   }
 
@@ -133,26 +143,34 @@ function segmentsFromAlignment(phrases, alignment) {
 
   for (const phrase of phrases) {
     const needle = normalize(phrase);
-    const at = norm.indexOf(needle, searchFrom);
+    let at = norm.indexOf(needle, searchFrom);
+
+    // Fallback: try without requiring exact trailing words if punctuation differed.
+    if (at === -1) {
+      const words = needle.split(" ").filter(Boolean);
+      if (words.length > 1) {
+        at = norm.indexOf(words.join(" "), searchFrom);
+      }
+    }
 
     if (at === -1) {
       const prev = segments[segments.length - 1];
       segments.push({
         text: phrase,
-        time: Number(((prev?.time ?? 0) + 1.0).toFixed(2)),
+        time: Number(((prev?.time ?? 0) + 0.85).toFixed(3)),
       });
       continue;
     }
 
     const charIndex = map[at] ?? 0;
-    const time = Number((starts[charIndex] ?? 0).toFixed(2));
+    const time = Number((starts[charIndex] ?? 0).toFixed(3));
     segments.push({ text: phrase, time });
-    searchFrom = at + needle.length;
+    searchFrom = at + Math.max(1, needle.length);
   }
 
   for (let i = 1; i < segments.length; i++) {
     if (segments[i].time <= segments[i - 1].time) {
-      segments[i].time = Number((segments[i - 1].time + 0.35).toFixed(2));
+      segments[i].time = Number((segments[i - 1].time + 0.25).toFixed(3));
     }
   }
 
@@ -298,7 +316,7 @@ async function main() {
     writeFileSync(outPath, audioBuffer);
     console.log(`  wrote ${outPath} (${audioBuffer.length} bytes)`);
 
-    const alignment = result.alignment ?? result.normalized_alignment;
+    const alignment = result.normalized_alignment ?? result.alignment;
     const segments = segmentsFromAlignment(phrases, alignment);
     question.voice = voiceFile;
     question.segments = segments;

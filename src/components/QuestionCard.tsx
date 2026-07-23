@@ -28,6 +28,16 @@ type Props = {
   timeline: QuestionTimeline;
 };
 
+/** Fixed 1080×1920 slots — never reflow when text/timer changes. */
+const LAYOUT = {
+  titleTop: 118,
+  badgeTop: 268,
+  cardTop: 390,
+  cardHeight: 430,
+  timerTop: 900,
+  progressTop: 1260,
+} as const;
+
 /**
  * Full-screen layout for a single quiz question.
  */
@@ -54,7 +64,7 @@ export const QuestionCard: React.FC<Props> = ({
   const inCountdown = countdownLocal >= 0 && !inReveal;
 
   const definitionFade = inReveal
-    ? interpolate(revealLocal, [0, Math.round(fps * 0.35)], [0, 1], {
+    ? interpolate(revealLocal, [0, Math.round(fps * 0.28)], [0, 1], {
         extrapolateRight: "clamp",
       })
     : 0;
@@ -74,17 +84,13 @@ export const QuestionCard: React.FC<Props> = ({
         )
       : 0;
 
-  const slideY = interpolate(intro, [0, 1], [80, 0]);
+  // Fade only — no vertical slide, so placements stay locked.
   const fade = interpolate(intro, [0, 1], [0, 1]) * (1 - exit);
-  const scale =
-    interpolate(intro, [0, 1], [0.96, 1]) *
-    interpolate(exit, [0, 1], [1, 0.97]);
 
   return (
     <AbsoluteFill
       style={{
         opacity: fade,
-        transform: `translateY(${slideY + exit * -40}px) scale(${scale})`,
         fontFamily: "Inter, sans-serif",
         color: colors.text,
       }}
@@ -108,33 +114,35 @@ export const QuestionCard: React.FC<Props> = ({
         </Sequence>
       ))}
 
-      {/* Center the whole stack so title sits lower and progress sits higher */}
-      <AbsoluteFill
+      {/* Title — fixed */}
+      <div
         style={{
-          // Bias the stack into the clear board area above the marker tray.
-          padding: "40px 48px 220px",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 0,
+          position: "absolute",
+          top: LAYOUT.titleTop,
+          left: 48,
+          right: 48,
+          fontSize: 54,
+          fontWeight: 700,
+          textAlign: "center",
+          letterSpacing: -0.5,
+          lineHeight: 1.18,
+          color: colors.text,
         }}
       >
-        <div
-          style={{
-            fontSize: 54,
-            fontWeight: 700,
-            marginBottom: 20,
-            textAlign: "center",
-            letterSpacing: -0.5,
-            lineHeight: 1.18,
-            maxWidth: 940,
-            color: colors.text,
-          }}
-        >
-          {title}
-        </div>
+        {title}
+      </div>
 
+      {/* Difficulty — fixed under title */}
+      <div
+        style={{
+          position: "absolute",
+          top: LAYOUT.badgeTop,
+          left: 0,
+          right: 0,
+          display: "flex",
+          justifyContent: "center",
+        }}
+      >
         <div
           style={{
             fontSize: 36,
@@ -142,7 +150,6 @@ export const QuestionCard: React.FC<Props> = ({
             color: colors.difficulty,
             letterSpacing: 1,
             textTransform: "uppercase",
-            marginBottom: 44,
             backgroundColor: "rgba(37,99,235,0.1)",
             border: `2px solid ${colors.accent}`,
             borderRadius: 999,
@@ -151,61 +158,73 @@ export const QuestionCard: React.FC<Props> = ({
         >
           {difficultyLabel}
         </div>
+      </div>
 
-        <div
-          style={{
-            width: "100%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            position: "relative",
-            marginBottom: inCountdown ? 36 : 44,
-            minHeight: 360,
-          }}
-        >
-          {showDefinition ? (
-            <div
-              style={{
-                position: inReveal ? "absolute" : "relative",
-                width: "100%",
-                display: "flex",
-                justifyContent: "center",
-              }}
-            >
-              <DefinitionRenderer
-                segments={question.segments}
-                frame={frame}
-                narrationStart={timeline.offsets.narration}
-                fadeOut={definitionFade}
-              />
-            </div>
-          ) : null}
-
-          {inReveal ? (
-            <AnswerReveal answer={question.answer} frame={revealLocal} />
-          ) : null}
-        </div>
-
-        {inCountdown ? (
-          <div
-            style={{
-              height: 300,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              marginBottom: 28,
-            }}
-          >
-            <CircularTimer frame={countdownLocal} visible />
-          </div>
+      {/* Definition / answer slot — fixed size */}
+      <div
+        style={{
+          position: "absolute",
+          top: LAYOUT.cardTop,
+          left: 0,
+          right: 0,
+          height: LAYOUT.cardHeight,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {showDefinition ? (
+          <DefinitionRenderer
+            segments={question.segments}
+            frame={frame}
+            narrationStart={timeline.offsets.narration}
+            fadeOut={definitionFade}
+            fixedHeight={LAYOUT.cardHeight}
+          />
         ) : null}
 
+        {inReveal ? (
+          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <AnswerReveal answer={question.answer} frame={revealLocal} />
+          </div>
+        ) : null}
+      </div>
+
+      {/* Timer slot — always reserved so nothing jumps */}
+      <div
+        style={{
+          position: "absolute",
+          top: LAYOUT.timerTop,
+          left: 0,
+          right: 0,
+          height: 300,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          opacity: inCountdown ? 1 : 0,
+          pointerEvents: "none",
+        }}
+      >
+        <CircularTimer frame={Math.max(0, countdownLocal)} visible={inCountdown} />
+      </div>
+
+      {/* Progress — fixed */}
+      <div
+        style={{
+          position: "absolute",
+          top: LAYOUT.progressTop,
+          left: 0,
+          right: 0,
+          display: "flex",
+          justifyContent: "center",
+        }}
+      >
         <ProgressDots
           total={total}
           currentIndex={index}
           difficultyLabel={`Question ${index + 1} / ${total}`}
         />
-      </AbsoluteFill>
+      </div>
     </AbsoluteFill>
   );
 };

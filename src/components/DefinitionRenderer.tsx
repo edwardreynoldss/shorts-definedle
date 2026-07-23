@@ -12,46 +12,47 @@ type Props = {
   narrationStart: number;
   /** 0–1 fade-out when revealing the answer. */
   fadeOut?: number;
+  /** Locked card height so layout never jumps. */
+  fixedHeight?: number;
 };
 
 /**
- * Clean definition card with voice-synced phrase reveal.
+ * Definition card with voice-synced phrase reveal (fixed size).
  */
 export const DefinitionRenderer: React.FC<Props> = ({
   segments,
   frame,
   narrationStart,
   fadeOut = 0,
+  fixedHeight = 430,
 }) => {
   const { fps } = useVideoConfig();
 
   const enter = spring({
-    frame: Math.max(0, frame - 4),
+    frame: Math.max(0, frame - 2),
     fps,
-    config: { damping: 16, stiffness: 110 },
+    config: { damping: 18, stiffness: 140 },
   });
 
   const opacity =
     interpolate(enter, [0, 1], [0, 1]) * interpolate(fadeOut, [0, 1], [1, 0]);
-  const y = interpolate(enter, [0, 1], [48, 0]);
-  const scale = interpolate(enter, [0, 1], [0.94, 1]);
 
   return (
     <div
       style={{
         width: "90%",
         maxWidth: 920,
-        minHeight: 360,
-        padding: "56px 48px",
+        height: fixedHeight,
+        padding: "48px 48px",
         borderRadius: 36,
         background: colors.card,
         border: `2px solid ${colors.cardBorder}`,
         boxShadow: "0 14px 36px rgba(17,24,39,0.1)",
         opacity,
-        transform: `translateY(${y}px) scale(${scale})`,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        boxSizing: "border-box",
       }}
     >
       <VoiceSyncText

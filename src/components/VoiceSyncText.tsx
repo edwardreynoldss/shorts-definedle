@@ -1,5 +1,5 @@
 import React from "react";
-import { interpolate, spring, useVideoConfig } from "remotion";
+import { interpolate, useVideoConfig } from "remotion";
 import { colors } from "../theme";
 import type { VoiceSegment } from "../types";
 import { framesToSec } from "../utils/timing";
@@ -12,54 +12,42 @@ type Props = {
 };
 
 /**
- * Reveals definition text phrase-by-phrase in sync with narration timing.
+ * Reveal phrases in sync with narration.
+ * All phrases stay laid out (invisible until spoken) so the card never reflows.
+ * Uses a short fade — not a slow spring — so text doesn't lag the voice.
  */
 export const VoiceSyncText: React.FC<Props> = ({
   segments,
   frame,
-  fontSize = 58,
+  fontSize = 64,
 }) => {
   const { fps } = useVideoConfig();
-  const t = framesToSec(frame);
-
-  const visibleCount = segments.filter((s) => t >= s.time).length;
-  const shown = segments.slice(0, Math.max(visibleCount, 0));
-
-  if (shown.length === 0) {
-    return (
-      <div
-        style={{
-          color: colors.textMuted,
-          fontSize,
-          fontWeight: 400,
-          lineHeight: 1.35,
-          textAlign: "center",
-          minHeight: fontSize * 3.2,
-        }}
-      />
-    );
-  }
+  // Slight lead so text appears as the phrase starts, not after it.
+  const TEXT_LEAD_SEC = 0.06;
+  const t = framesToSec(frame) + TEXT_LEAD_SEC;
+  const fadeFrames = 3;
 
   return (
     <div
       style={{
         color: colors.text,
         fontSize,
-        fontWeight: 400,
+        fontWeight: 500,
         lineHeight: 1.35,
         textAlign: "center",
-        minHeight: fontSize * 3.2,
+        width: "100%",
       }}
     >
-      {shown.map((segment, i) => {
-        const localFrame = Math.max(0, frame - Math.round(segment.time * fps));
-        const enter = spring({
-          frame: localFrame,
-          fps,
-          config: { damping: 18, stiffness: 140 },
-        });
-        const opacity = interpolate(enter, [0, 1], [0, 1]);
-        const y = interpolate(enter, [0, 1], [14, 0]);
+      {segments.map((segment, i) => {
+        const startFrame = Math.round(segment.time * fps);
+        const localFrame = frame - startFrame + Math.round(TEXT_LEAD_SEC * fps);
+        const visible = t >= segment.time;
+        const opacity = visible
+          ? interpolate(localFrame, [0, fadeFrames], [0, 1], {
+              extrapolateLeft: "clamp",
+              extrapolateRight: "clamp",
+            })
+          : 0;
 
         return (
           <span
@@ -67,8 +55,7 @@ export const VoiceSyncText: React.FC<Props> = ({
             style={{
               display: "inline",
               opacity,
-              transform: `translateY(${y}px)`,
-              marginRight: 10,
+              marginRight: i < segments.length - 1 ? 12 : 0,
             }}
           >
             {segment.text}
