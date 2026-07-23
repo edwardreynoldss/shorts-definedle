@@ -1,4 +1,4 @@
-import { DEFAULT_DIFFICULTY_LABELS, INTRO, TIMING, VIDEO } from "../theme";
+import { DEFAULT_DIFFICULTY_LABELS, TIMING, VIDEO } from "../theme";
 import type { QuizQuestion } from "../types";
 
 const fps = VIDEO.fps;
@@ -80,9 +80,6 @@ export const buildQuestionTimeline = (
 export type QuizTimeline = {
   questionTimelines: QuestionTimeline[];
   starts: number[];
-  /** Cold-open intro before question 1. */
-  videoIntroFrames: number;
-  videoIntroStart: number;
   scoreOutroStart: number;
   scoreOutroFrames: number;
   totalFrames: number;
@@ -90,15 +87,11 @@ export type QuizTimeline = {
 
 export const buildQuizTimeline = (
   questions: QuizQuestion[],
-  introDurationSec: number = INTRO.durationSec,
 ): QuizTimeline => {
   const questionTimelines = questions.map((q) => buildQuestionTimeline(q));
-  const videoIntroFrames = secToFrames(introDurationSec);
   const scoreOutroFrames = secToFrames(TIMING.scoreOutroSec);
 
   let cursor = 0;
-  const videoIntroStart = cursor;
-  cursor += videoIntroFrames;
 
   const starts = questionTimelines.map((tl) => {
     const start = cursor;
@@ -112,8 +105,6 @@ export const buildQuizTimeline = (
   return {
     questionTimelines,
     starts,
-    videoIntroFrames,
-    videoIntroStart,
     scoreOutroStart,
     scoreOutroFrames,
     totalFrames: cursor,

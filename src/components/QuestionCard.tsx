@@ -9,7 +9,7 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
-import { colors, LAYOUT } from "../theme";
+import { colors, INTRO, LAYOUT } from "../theme";
 import type { QuizQuestion, VoiceSegment } from "../types";
 import {
   getDifficultyLabel,
@@ -138,7 +138,24 @@ export const QuestionCard: React.FC<Props> = ({
         {title}
       </div>
 
-      {/* Difficulty — fixed under title */}
+      {/* Tagline — directly under brand */}
+      <div
+        style={{
+          position: "absolute",
+          top: LAYOUT.subtitleTop,
+          left: 64,
+          right: 64,
+          fontSize: 36,
+          fontWeight: 500,
+          textAlign: "center",
+          lineHeight: 1.25,
+          color: colors.textMuted,
+        }}
+      >
+        {INTRO.tagline}
+      </div>
+
+      {/* Difficulty — right above the question card */}
       <div
         style={{
           position: "absolute",

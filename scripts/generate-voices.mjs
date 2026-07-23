@@ -1,18 +1,16 @@
 #!/usr/bin/env node
 /**
  * Generate ElevenLabs voiceovers for quiz definitions, save MP3s into /public,
- * and rewrite segment timings so on-screen phrases match the spoken audio.
+ * and rewrite segment timings so on-screen words match the spoken audio.
  *
  * Reads src/data/batches.json when present, otherwise src/data/questions.json.
  *
  * Usage:
  *   npm run voices              # only missing question voices
- *   npm run voices:intro        # intro voice only (skipped if intro.mp3 exists)
  *   npm run voices -- --force   # regenerate everything selected
  *
  * Options:
  *   --dry-run              Print planned work without calling the API
- *   --intro-only           Generate intro voice only
  *   --force                Recreate audio even if the mp3 already exists
  *   --only=1,3             Only these global question indexes (1-based)
  *   --batch=QuizShort-01   Only one composition / batch id
@@ -36,17 +34,11 @@ const MIN_VOICE_BYTES = 1500;
 
 const INTRO = {
   brand: "Definedle",
-  line1: "Can you guess the word from the definition alone?",
-  line2: "Only 1% get the last question correct",
-  voiceFile: "intro.mp3",
-  durationSec: 5.5,
-  line2AtSec: 2.4,
 };
 
 const args = process.argv.slice(2);
 const argSet = new Set(args);
 const dryRun = argSet.has("--dry-run");
-const introOnly = argSet.has("--intro-only");
 const force = argSet.has("--force");
 const onlyArg = args.find((a) => a.startsWith("--only="));
 const batchArg = args.find((a) => a.startsWith("--batch="));
@@ -370,21 +362,6 @@ function loadJobs() {
   };
 }
 
-function estimateAudioDurationSec(alignment) {
-  if (!alignment?.character_end_times_seconds?.length) return null;
-  const ends = alignment.character_end_times_seconds;
-  return ends[ends.length - 1];
-}
-
-function findPhraseStartSec(phrase, alignment) {
-  if (!alignment?.characters?.length) return null;
-  const { characters, character_start_times_seconds: starts } = alignment;
-  const { norm, map } = buildNormIndexMap(characters);
-  const at = norm.indexOf(normalize(phrase));
-  if (at === -1) return null;
-  return starts[map[at] ?? 0] ?? null;
-}
-
 function voiceFileExists(filename) {
   const outPath = resolve(PUBLIC_DIR, filename);
   if (!existsSync(outPath)) return false;
@@ -393,123 +370,6 @@ function voiceFileExists(filename) {
   } catch {
     return false;
   }
-}
-
-function existingIntroMeta(manifest) {
-  const fromManifest = {
-    introVoice:
-      manifest?.introVoice ??
-      manifest?.batches?.[0]?.introVoice ??
-      INTRO.voiceFile,
-    introDurationSec:
-      manifest?.introDurationSec ??
-      manifest?.batches?.[0]?.introDurationSec ??
-      INTRO.durationSec,
-    introLine2AtSec:
-      manifest?.introLine2AtSec ??
-      manifest?.batches?.[0]?.introLine2AtSec ??
-      INTRO.line2AtSec,
-  };
-  return fromManifest;
-}
-
-function applyIntroMeta(manifest, meta) {
-  if (!manifest) return;
-  manifest.title = INTRO.brand;
-  manifest.introVoice = meta.introVoice;
-  manifest.introDurationSec = meta.introDurationSec;
-  manifest.introLine2AtSec = meta.introLine2AtSec;
-  for (const batch of manifest.batches ?? []) {
-    batch.title = INTRO.brand;
-    batch.introVoice = meta.introVoice;
-    batch.introDurationSec = meta.introDurationSec;
-    batch.introLine2AtSec = meta.introLine2AtSec;
-  }
-}
-
-function saveIntroSideFiles(loaded, introMeta) {
-  if (loaded.mode === "batches") {
-    applyIntroMeta(loaded.manifest, introMeta);
-    loaded.save();
-    if (loaded.manifest.batches[0]) {
-      const first = loaded.manifest.batches[0];
-      writeFileSync(
-        QUESTIONS_PATH,
-        `${JSON.stringify(
-          {
-            title: INTRO.brand,
-            scorePrompt: first.scorePrompt,
-            scoreSubtext: first.scoreSubtext,
-            introVoice: introMeta.introVoice,
-            introDurationSec: introMeta.introDurationSec,
-            introLine2AtSec: introMeta.introLine2AtSec,
-            questions: first.questions,
-          },
-          null,
-          2,
-        )}\n`,
-      );
-    }
-    return;
-  }
-
-  const data = JSON.parse(readFileSync(QUESTIONS_PATH, "utf8"));
-  data.title = INTRO.brand;
-  Object.assign(data, introMeta);
-  writeFileSync(QUESTIONS_PATH, `${JSON.stringify(data, null, 2)}\n`);
-}
-
-async function generateIntroVoice(manifest, { skipIfExists }) {
-  const voiceFile = INTRO.voiceFile;
-  console.log(`\n[intro] ${voiceFile}`);
-  console.log(`  text: ${INTRO.line1} ${INTRO.line2}`);
-
-  if (skipIfExists && voiceFileExists(voiceFile)) {
-    const meta = existingIntroMeta(manifest);
-    console.log(
-      `  skip (already exists)  duration=${meta.introDurationSec}s line2At=${meta.introLine2AtSec}s`,
-    );
-    return { ...meta, skipped: true };
-  }
-
-  if (dryRun) {
-    console.log("  would generate");
-    return {
-      introVoice: voiceFile,
-      introDurationSec: INTRO.durationSec,
-      introLine2AtSec: INTRO.line2AtSec,
-      skipped: false,
-    };
-  }
-
-  const introText = `${INTRO.line1} ${INTRO.line2}`;
-  const result = await synthesizeWithTimestamps(introText);
-  const audioBuffer = Buffer.from(result.audio_base64, "base64");
-  const outPath = resolve(PUBLIC_DIR, voiceFile);
-  writeFileSync(outPath, audioBuffer);
-  console.log(`  wrote ${outPath} (${audioBuffer.length} bytes)`);
-
-  const alignment = result.normalized_alignment ?? result.alignment;
-  const spoken = estimateAudioDurationSec(alignment);
-  const line2At =
-    findPhraseStartSec(INTRO.line2, alignment) ?? INTRO.line2AtSec;
-  const introDurationSec = Number(
-    Math.max((spoken ?? INTRO.durationSec) + 0.45, 4.5).toFixed(2),
-  );
-
-  console.log(
-    `  duration=${introDurationSec}s  line2At=${Number(line2At).toFixed(2)}s`,
-  );
-
-  const meta = {
-    introVoice: voiceFile,
-    introDurationSec,
-    introLine2AtSec: Number(Number(line2At).toFixed(2)),
-    skipped: false,
-  };
-
-  applyIntroMeta(manifest, meta);
-  return meta;
 }
 
 async function main() {
@@ -534,21 +394,6 @@ async function main() {
       ? "Mode: force regenerate"
       : "Mode: skip existing mp3 files (use --force to recreate)",
   );
-
-  // Intro is opt-in only — never burns credits on normal `npm run voices`.
-  if (introOnly) {
-    const introMeta = await generateIntroVoice(
-      loaded.mode === "batches" ? loaded.manifest : null,
-      { skipIfExists: !force },
-    );
-    if (!dryRun && !introMeta.skipped) {
-      saveIntroSideFiles(loaded, introMeta);
-      console.log("\nIntro voice saved.");
-    } else if (!dryRun && introMeta.skipped) {
-      console.log("\nIntro already present — nothing to do.");
-    }
-    return;
-  }
 
   const selected = loaded.jobs.filter((job) =>
     onlyIndexes ? onlyIndexes.includes(job.globalIndex) : true,
@@ -654,11 +499,9 @@ async function main() {
   }
 
   if (!dryRun) {
-    // Preserve any existing intro metadata; do not regenerate intro here.
     loaded.save();
     if (loaded.mode === "batches" && loaded.manifest.batches[0]) {
       const first = loaded.manifest.batches[0];
-      const introMeta = existingIntroMeta(loaded.manifest);
       writeFileSync(
         QUESTIONS_PATH,
         `${JSON.stringify(
@@ -666,7 +509,6 @@ async function main() {
             title: first.title ?? INTRO.brand,
             scorePrompt: first.scorePrompt,
             scoreSubtext: first.scoreSubtext,
-            ...introMeta,
             questions: first.questions,
           },
           null,
@@ -679,7 +521,6 @@ async function main() {
   console.log(
     `\nDone. generated=${created} aligned=${aligned} skipped=${skipped}${force ? " (forced)" : ""}`,
   );
-  console.log("Intro is separate: npm run voices:intro");
   console.log("Next: npm run dev   or   npm run render:all");
 }
 

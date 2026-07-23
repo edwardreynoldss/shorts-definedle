@@ -170,10 +170,7 @@
             }
           ]
         }
-      ],
-      "introVoice": "intro.mp3",
-      "introDurationSec": 6.63,
-      "introLine2AtSec": 3.1
+      ]
     },
     {
       "id": "QuizShort-02",
@@ -348,13 +345,7 @@
             }
           ]
         }
-      ],
-      "introVoice": "intro.mp3",
-      "introDurationSec": 6.63,
-      "introLine2AtSec": 3.1
+      ]
     }
-  ],
-  "introVoice": "intro.mp3",
-  "introDurationSec": 6.63,
-  "introLine2AtSec": 3.1
+  ]
 }

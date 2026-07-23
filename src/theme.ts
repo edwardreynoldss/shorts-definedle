@@ -25,16 +25,10 @@ export const VIDEO = {
   fps: 30,
 } as const;
 
-/** Brand + cold-open copy shown before question 1. */
+/** Brand copy shown on every question screen. */
 export const INTRO = {
   brand: "Definedle",
-  line1: "Can you guess the word from the definition alone?",
-  line2: "Only 1% get the last question correct",
-  voiceFile: "intro.mp3",
-  /** Fallback length if audio metadata isn't available yet. */
-  durationSec: 5.5,
-  /** When line2 appears (seconds into intro). */
-  line2AtSec: 2.4,
+  tagline: "Guess the word from the definition",
 } as const;
 
 /** Timing knobs shared across the quiz engine. */
@@ -54,7 +48,10 @@ export const TIMING = {
 /** Fixed 1080×1920 slots matching the target Short spacing. */
 export const LAYOUT = {
   titleTop: 96,
-  badgeTop: 230,
+  /** Tagline directly under the brand. */
+  subtitleTop: 210,
+  /** Difficulty badge sits just above the definition card. */
+  badgeTop: 560,
   /** Card sits slightly above vertical center (center ≈ 860 on 1920). */
   cardTop: 660,
   cardHeight: 400,

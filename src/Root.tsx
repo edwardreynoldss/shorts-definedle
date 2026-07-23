@@ -15,9 +15,6 @@ type BatchFile = {
   title?: string;
   scorePrompt?: string;
   scoreSubtext?: string;
-  introVoice?: string;
-  introDurationSec?: number;
-  introLine2AtSec?: number;
   batches?: Array<
     QuizData & {
       id: string;
@@ -28,10 +25,7 @@ type BatchFile = {
 const calculateMetadata: CalculateMetadataFunction<QuizProps> = ({
   props,
 }) => {
-  const { totalFrames } = buildQuizTimeline(
-    props.data.questions,
-    props.data.introDurationSec ?? INTRO.durationSec,
-  );
+  const { totalFrames } = buildQuizTimeline(props.data.questions);
 
   return {
     durationInFrames: totalFrames,
@@ -60,16 +54,6 @@ export const RemotionRoot: React.FC = () => {
           title: batch.title ?? manifest.title ?? INTRO.brand,
           scorePrompt: batch.scorePrompt ?? manifest.scorePrompt,
           scoreSubtext: batch.scoreSubtext ?? manifest.scoreSubtext,
-          introVoice:
-            batch.introVoice ?? manifest.introVoice ?? INTRO.voiceFile,
-          introDurationSec:
-            batch.introDurationSec ??
-            manifest.introDurationSec ??
-            INTRO.durationSec,
-          introLine2AtSec:
-            batch.introLine2AtSec ??
-            manifest.introLine2AtSec ??
-            INTRO.line2AtSec,
           questions: batch.questions,
         };
 

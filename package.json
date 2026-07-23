@@ -31,7 +31,6 @@
     "setup:env": "node scripts/setup-env.mjs",
     "voices": "node scripts/generate-voices.mjs",
     "voices:dry": "node scripts/generate-voices.mjs --dry-run",
-    "voices:intro": "node scripts/generate-voices.mjs --intro-only",
     "upgrade": "remotion upgrade",
     "lint": "eslint src && tsc"
   }

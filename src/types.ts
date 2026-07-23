@@ -26,12 +26,6 @@ export type QuizData = {
   /** End-screen CTA prompting viewers to comment scores. */
   scorePrompt?: string;
   scoreSubtext?: string;
-  /** Shared cold-open voice file under /public. */
-  introVoice?: string;
-  /** Override intro length (seconds), usually set by `npm run voices`. */
-  introDurationSec?: number;
-  /** When the second intro line appears. */
-  introLine2AtSec?: number;
   questions: QuizQuestion[];
 };
 
