@@ -111,7 +111,8 @@ export const QuestionCard: React.FC<Props> = ({
       {/* Center the whole stack so title sits lower and progress sits higher */}
       <AbsoluteFill
         style={{
-          padding: "0 48px",
+          // Bias the stack into the clear board area above the marker tray.
+          padding: "40px 48px 220px",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",

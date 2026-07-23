@@ -57,7 +57,7 @@ export const DefinitionRenderer: React.FC<Props> = ({
       <VoiceSyncText
         segments={segments}
         frame={Math.max(0, frame - narrationStart)}
-        fontSize={58}
+        fontSize={64}
       />
     </div>
   );
