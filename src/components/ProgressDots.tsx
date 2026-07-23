@@ -9,7 +9,7 @@ type Props = {
 };
 
 /**
- * Footer progress with current difficulty label.
+ * Progress marker: Question N / total + dots.
  */
 export const ProgressDots: React.FC<Props> = ({
   total,
@@ -31,7 +31,7 @@ export const ProgressDots: React.FC<Props> = ({
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        gap: 16,
+        gap: 18,
         opacity: interpolate(enter, [0, 1], [0, 1]),
         transform: `translateY(${interpolate(enter, [0, 1], [24, 0])}px)`,
       }}
@@ -39,14 +39,14 @@ export const ProgressDots: React.FC<Props> = ({
       <div
         style={{
           color: colors.textMuted,
-          fontSize: 26,
+          fontSize: 30,
           fontWeight: 600,
           letterSpacing: 0.5,
         }}
       >
         {difficultyLabel}
       </div>
-      <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
+      <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
         {Array.from({ length: total }).map((_, i) => {
           const active = i === currentIndex;
           const done = i < currentIndex;
@@ -62,8 +62,8 @@ export const ProgressDots: React.FC<Props> = ({
             <div
               key={i}
               style={{
-                width: active ? 20 : 14,
-                height: active ? 20 : 14,
+                width: active ? 22 : 16,
+                height: active ? 22 : 16,
                 borderRadius: "50%",
                 backgroundColor:
                   active || done ? colors.accent : "rgba(17,24,39,0.18)",

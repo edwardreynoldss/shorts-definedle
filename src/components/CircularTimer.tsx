@@ -46,8 +46,8 @@ export const CircularTimer: React.FC<Props> = ({ frame, visible }) => {
     config: { damping: 14, stiffness: 130 },
   });
 
-  const size = 260;
-  const stroke = 14;
+  const size = 280;
+  const stroke = 15;
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
   const dashOffset = circumference * (1 - progress);
@@ -95,7 +95,7 @@ export const CircularTimer: React.FC<Props> = ({ frame, visible }) => {
       >
         <div
           style={{
-            fontSize: 110,
+            fontSize: 120,
             fontWeight: 700,
             color: colors.text,
             transform: `scale(${0.92 + numberPulse * 0.08})`,

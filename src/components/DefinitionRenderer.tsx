@@ -39,11 +39,11 @@ export const DefinitionRenderer: React.FC<Props> = ({
   return (
     <div
       style={{
-        width: "86%",
-        maxWidth: 860,
-        minHeight: 300,
-        padding: "48px 44px",
-        borderRadius: 32,
+        width: "90%",
+        maxWidth: 920,
+        minHeight: 360,
+        padding: "56px 48px",
+        borderRadius: 36,
         background: colors.card,
         border: `2px solid ${colors.cardBorder}`,
         boxShadow: "0 14px 36px rgba(17,24,39,0.1)",
@@ -57,6 +57,7 @@ export const DefinitionRenderer: React.FC<Props> = ({
       <VoiceSyncText
         segments={segments}
         frame={Math.max(0, frame - narrationStart)}
+        fontSize={58}
       />
     </div>
   );

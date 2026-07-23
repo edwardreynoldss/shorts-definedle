@@ -37,11 +37,11 @@ export const AnswerReveal: React.FC<Props> = ({ answer, frame }) => {
     <div
       style={{
         position: "relative",
-        width: "86%",
-        maxWidth: 860,
-        minHeight: 320,
-        padding: "56px 40px",
-        borderRadius: 32,
+        width: "90%",
+        maxWidth: 920,
+        minHeight: 360,
+        padding: "60px 48px",
+        borderRadius: 36,
         background: "rgba(240,253,244,0.95)",
         border: `3px solid ${colors.correct}`,
         boxShadow: "0 16px 40px rgba(21,128,61,0.16)",
@@ -54,7 +54,7 @@ export const AnswerReveal: React.FC<Props> = ({ answer, frame }) => {
     >
       <div
         style={{
-          fontSize: 92,
+          fontSize: 100,
           fontWeight: 700,
           letterSpacing: 5,
           textTransform: "uppercase",

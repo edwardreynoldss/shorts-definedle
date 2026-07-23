@@ -110,42 +110,44 @@ export const QuestionCard: React.FC<Props> = ({
 
       <AbsoluteFill
         style={{
-          padding: "88px 44px 64px",
+          // Title sits lower; footer sits higher — balanced, not cramped.
+          padding: "160px 48px 120px",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
         }}
       >
+        {/* Title first, then difficulty underneath */}
         <div
           style={{
-            fontSize: 34,
+            fontSize: 54,
             fontWeight: 700,
-            color: colors.difficulty,
-            letterSpacing: 1,
-            textTransform: "uppercase",
-            marginBottom: 18,
-            backgroundColor: "rgba(37,99,235,0.1)",
-            border: `2px solid ${colors.accent}`,
-            borderRadius: 999,
-            padding: "10px 28px",
-          }}
-        >
-          {difficultyLabel}
-        </div>
-
-        <div
-          style={{
-            fontSize: 48,
-            fontWeight: 700,
-            marginBottom: 40,
+            marginBottom: 22,
             textAlign: "center",
-            letterSpacing: -0.4,
-            lineHeight: 1.15,
-            maxWidth: 920,
+            letterSpacing: -0.5,
+            lineHeight: 1.18,
+            maxWidth: 940,
             color: colors.text,
           }}
         >
           {title}
+        </div>
+
+        <div
+          style={{
+            fontSize: 36,
+            fontWeight: 700,
+            color: colors.difficulty,
+            letterSpacing: 1,
+            textTransform: "uppercase",
+            marginBottom: 52,
+            backgroundColor: "rgba(37,99,235,0.1)",
+            border: `2px solid ${colors.accent}`,
+            borderRadius: 999,
+            padding: "12px 32px",
+          }}
+        >
+          {difficultyLabel}
         </div>
 
         <div
@@ -156,6 +158,9 @@ export const QuestionCard: React.FC<Props> = ({
             alignItems: "center",
             justifyContent: "center",
             position: "relative",
+            minHeight: 0,
+            marginTop: 8,
+            marginBottom: 8,
           }}
         >
           {showDefinition ? (
@@ -181,13 +186,15 @@ export const QuestionCard: React.FC<Props> = ({
           ) : null}
         </div>
 
+        {/* Only reserve timer height while counting down — avoids a huge empty hole */}
         <div
           style={{
-            height: 280,
+            height: inCountdown ? 300 : inReveal ? 36 : 48,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            marginBottom: 28,
+            marginTop: inCountdown ? 12 : 0,
+            marginBottom: 12,
           }}
         >
           <CircularTimer frame={countdownLocal} visible={inCountdown} />

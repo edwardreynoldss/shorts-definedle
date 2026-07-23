@@ -17,7 +17,7 @@ type Props = {
 export const VoiceSyncText: React.FC<Props> = ({
   segments,
   frame,
-  fontSize = 44,
+  fontSize = 58,
 }) => {
   const { fps } = useVideoConfig();
   const t = framesToSec(frame);
