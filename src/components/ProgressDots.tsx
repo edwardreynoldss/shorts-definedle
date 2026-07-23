@@ -5,12 +5,17 @@ import { colors } from "../theme";
 type Props = {
   total: number;
   currentIndex: number;
+  difficultyLabel: string;
 };
 
 /**
- * Footer progress: Question N ● ○ ○ ○
+ * Footer progress with current difficulty label.
  */
-export const ProgressDots: React.FC<Props> = ({ total, currentIndex }) => {
+export const ProgressDots: React.FC<Props> = ({
+  total,
+  currentIndex,
+  difficultyLabel,
+}) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
@@ -26,7 +31,7 @@ export const ProgressDots: React.FC<Props> = ({ total, currentIndex }) => {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        gap: 18,
+        gap: 16,
         opacity: interpolate(enter, [0, 1], [0, 1]),
         transform: `translateY(${interpolate(enter, [0, 1], [24, 0])}px)`,
       }}
@@ -34,14 +39,14 @@ export const ProgressDots: React.FC<Props> = ({ total, currentIndex }) => {
       <div
         style={{
           color: colors.textMuted,
-          fontSize: 28,
+          fontSize: 26,
           fontWeight: 600,
-          letterSpacing: 1,
+          letterSpacing: 0.5,
         }}
       >
-        Question {currentIndex + 1}
+        {difficultyLabel}
       </div>
-      <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+      <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
         {Array.from({ length: total }).map((_, i) => {
           const active = i === currentIndex;
           const done = i < currentIndex;
@@ -57,13 +62,11 @@ export const ProgressDots: React.FC<Props> = ({ total, currentIndex }) => {
             <div
               key={i}
               style={{
-                width: active ? 22 : 16,
-                height: active ? 22 : 16,
+                width: active ? 20 : 14,
+                height: active ? 20 : 14,
                 borderRadius: "50%",
-                backgroundColor: active || done ? colors.accent : "rgba(255,255,255,0.22)",
-                boxShadow: active
-                  ? `0 0 18px rgba(59,130,246,${0.55 * pulse})`
-                  : undefined,
+                backgroundColor:
+                  active || done ? colors.accent : "rgba(17,24,39,0.18)",
                 transform: `scale(${active ? 0.9 + pulse * 0.15 : 1})`,
               }}
             />

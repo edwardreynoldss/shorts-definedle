@@ -16,7 +16,6 @@ type Props = {
 
 /**
  * Large circular countdown with shrinking ring.
- * Tick audio is sequenced by QuestionCard for reliable playback.
  */
 export const CircularTimer: React.FC<Props> = ({ frame, visible }) => {
   const { fps } = useVideoConfig();
@@ -47,7 +46,7 @@ export const CircularTimer: React.FC<Props> = ({ frame, visible }) => {
     config: { damping: 14, stiffness: 130 },
   });
 
-  const size = 280;
+  const size = 260;
   const stroke = 14;
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -71,8 +70,8 @@ export const CircularTimer: React.FC<Props> = ({ frame, visible }) => {
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          fill="rgba(255,255,255,0.04)"
-          stroke="rgba(255,255,255,0.12)"
+          fill="rgba(255,255,255,0.92)"
+          stroke="rgba(17,24,39,0.1)"
           strokeWidth={stroke}
         />
         <circle
@@ -85,9 +84,6 @@ export const CircularTimer: React.FC<Props> = ({ frame, visible }) => {
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={dashOffset}
-          style={{
-            filter: `drop-shadow(0 0 12px ${ringColor}88)`,
-          }}
         />
       </svg>
 
@@ -99,13 +95,10 @@ export const CircularTimer: React.FC<Props> = ({ frame, visible }) => {
       >
         <div
           style={{
-            fontSize: 120,
+            fontSize: 110,
             fontWeight: 700,
             color: colors.text,
             transform: `scale(${0.92 + numberPulse * 0.08})`,
-            textShadow: warn
-              ? `0 0 28px ${colors.warning}99`
-              : `0 0 24px ${colors.accent}66`,
           }}
         >
           {secondsLeft}

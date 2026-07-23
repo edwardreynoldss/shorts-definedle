@@ -3,6 +3,7 @@ import { AbsoluteFill } from "remotion";
 import { loadFont } from "@remotion/google-fonts/Inter";
 import { AnimatedBackground } from "../components/AnimatedBackground";
 import { TransitionManager } from "../components/TransitionManager";
+import { colors } from "../theme";
 import type { QuizData } from "../types";
 
 const { fontFamily } = loadFont("normal", {
@@ -19,7 +20,7 @@ type Props = {
  */
 export const QuizShort: React.FC<Props> = ({ data }) => {
   return (
-    <AbsoluteFill style={{ fontFamily, backgroundColor: "#09090B" }}>
+    <AbsoluteFill style={{ fontFamily, backgroundColor: colors.background }}>
       <AnimatedBackground />
       <TransitionManager data={data} />
     </AbsoluteFill>

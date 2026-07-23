@@ -1,49 +1,46 @@
 import React from "react";
 import {
   AbsoluteFill,
+  Img,
   interpolate,
+  staticFile,
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
 import { colors } from "../theme";
-import { ParticleSystem } from "./ParticleSystem";
 
 /**
- * Dark premium backdrop: drifting gradient, floating particles, vignette.
+ * Educational whiteboard backdrop with subtle motion and soft overlays.
  */
 export const AnimatedBackground: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const driftX = interpolate(frame, [0, fps * 40], [0, 80], {
-    extrapolateRight: "extend",
-  });
-  const driftY = interpolate(frame, [0, fps * 40], [0, -60], {
-    extrapolateRight: "extend",
-  });
-  const pulse = interpolate(Math.sin(frame / 28), [-1, 1], [0.55, 0.9]);
+  const drift = interpolate(Math.sin(frame / (fps * 2.2)), [-1, 1], [-8, 8]);
+  const scale = interpolate(Math.sin(frame / (fps * 3.4)), [-1, 1], [1.02, 1.05]);
 
   return (
     <AbsoluteFill style={{ backgroundColor: colors.background }}>
       <AbsoluteFill
         style={{
-          background: `
-            radial-gradient(circle at ${38 + driftX * 0.15}% ${28 + driftY * 0.1}%, rgba(59,130,246,${0.22 * pulse}) 0%, transparent 42%),
-            radial-gradient(circle at ${72 - driftX * 0.1}% ${68 + driftY * 0.08}%, rgba(34,197,94,0.12) 0%, transparent 38%),
-            radial-gradient(circle at 50% 100%, rgba(245,158,11,0.08) 0%, transparent 45%),
-            linear-gradient(165deg, #0c0c10 0%, ${colors.background} 48%, #07070a 100%)
-          `,
-          transform: `translate(${Math.sin(frame / 45) * 6}px, ${Math.cos(frame / 55) * 4}px)`,
+          transform: `scale(${scale}) translate(${drift}px, ${drift * -0.4}px)`,
         }}
-      />
+      >
+        <Img
+          src={staticFile("whiteboard.jpg")}
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+          }}
+        />
+      </AbsoluteFill>
 
-      <ParticleSystem count={28} />
-
-      {/* Soft vignette */}
+      {/* Soft wash: keep the board readable without hiding the marker tray */}
       <AbsoluteFill
         style={{
           background:
-            "radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.72) 100%)",
+            "linear-gradient(180deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.18) 82%, rgba(255,255,255,0.28) 100%)",
           pointerEvents: "none",
         }}
       />

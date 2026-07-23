@@ -3,17 +3,22 @@ import { AbsoluteFill, Sequence } from "remotion";
 import type { QuizData } from "../types";
 import { buildQuizTimeline } from "../utils/timing";
 import { QuestionCard } from "./QuestionCard";
+import { ScoreOutro } from "./ScoreOutro";
 
 type Props = {
   data: QuizData;
 };
 
 /**
- * Sequences each question with calculated offsets — fully data-driven.
+ * Sequences each question plus the final score CTA — fully data-driven.
  */
 export const TransitionManager: React.FC<Props> = ({ data }) => {
-  const { questionTimelines, starts } = buildQuizTimeline(data.questions);
-  const title = data.title ?? "Guess the Word";
+  const { questionTimelines, starts, scoreOutroStart, scoreOutroFrames } =
+    buildQuizTimeline(data.questions);
+  const title = data.title ?? "Guess the word from the definition";
+  const scorePrompt = data.scorePrompt ?? "Comment your score below 👇";
+  const scoreSubtext =
+    data.scoreSubtext ?? "How many did you get right?";
 
   return (
     <AbsoluteFill>
@@ -34,6 +39,15 @@ export const TransitionManager: React.FC<Props> = ({ data }) => {
           />
         </Sequence>
       ))}
+
+      <Sequence
+        from={scoreOutroStart}
+        durationInFrames={scoreOutroFrames}
+        name="Score outro"
+        premountFor={20}
+      >
+        <ScoreOutro prompt={scorePrompt} subtext={scoreSubtext} />
+      </Sequence>
     </AbsoluteFill>
   );
 };

@@ -15,7 +15,7 @@ type Props = {
 };
 
 /**
- * Glass definition card with voice-synced phrase reveal.
+ * Clean definition card with voice-synced phrase reveal.
  */
 export const DefinitionRenderer: React.FC<Props> = ({
   segments,
@@ -41,15 +41,12 @@ export const DefinitionRenderer: React.FC<Props> = ({
       style={{
         width: "86%",
         maxWidth: 860,
-        minHeight: 320,
+        minHeight: 300,
         padding: "48px 44px",
-        borderRadius: 36,
+        borderRadius: 32,
         background: colors.card,
-        border: `1px solid ${colors.cardBorder}`,
-        boxShadow:
-          "0 24px 80px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.12)",
-        backdropFilter: "blur(22px)",
-        WebkitBackdropFilter: "blur(22px)",
+        border: `2px solid ${colors.cardBorder}`,
+        boxShadow: "0 14px 36px rgba(17,24,39,0.1)",
         opacity,
         transform: `translateY(${y}px) scale(${scale})`,
         display: "flex",

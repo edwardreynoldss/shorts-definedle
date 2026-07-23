@@ -1,4 +1,4 @@
-import { TIMING, VIDEO } from "../theme";
+import { DEFAULT_DIFFICULTY_LABELS, TIMING, VIDEO } from "../theme";
 import type { QuizQuestion } from "../types";
 
 const fps = VIDEO.fps;
@@ -15,8 +15,21 @@ export const getNarrationDurationSec = (question: QuizQuestion): number => {
   }
 
   const last = question.segments[question.segments.length - 1];
-  // Hold the final phrase briefly after it appears, keeping the short under ~42s.
-  return Math.max(last.time + 0.45, 2.1);
+  return Math.max(last.time + 0.4, 2.1);
+};
+
+export const getDifficultyLabel = (
+  question: QuizQuestion,
+  index: number,
+): string => {
+  if (question.difficultyLabel) {
+    return question.difficultyLabel;
+  }
+
+  return (
+    DEFAULT_DIFFICULTY_LABELS[index] ??
+    `${Math.max(1, 70 - index * 20)}% Question`
+  );
 };
 
 export type QuestionTimeline = {
@@ -26,7 +39,6 @@ export type QuestionTimeline = {
   countdownFrames: number;
   revealFrames: number;
   totalFrames: number;
-  isBonus: boolean;
   /** Frame offsets relative to the start of this question. */
   offsets: {
     narration: number;
@@ -37,16 +49,11 @@ export type QuestionTimeline = {
 
 export const buildQuestionTimeline = (
   question: QuizQuestion,
-  index: number,
-  totalQuestions: number,
 ): QuestionTimeline => {
-  const isBonus = question.isBonus ?? index === totalQuestions - 1;
-
   const introFrames = secToFrames(TIMING.transitionSec);
   const narrationFrames = secToFrames(getNarrationDurationSec(question));
   const delayFrames = secToFrames(TIMING.postNarrationDelaySec);
   const countdownFrames = secToFrames(TIMING.countdownSec);
-  // Exit motion plays inside the reveal hold so transitions don't stack length.
   const revealFrames = secToFrames(TIMING.revealHoldSec);
 
   const offsets = {
@@ -64,15 +71,13 @@ export const buildQuestionTimeline = (
     countdownFrames,
     revealFrames,
     totalFrames,
-    isBonus,
     offsets,
   };
 };
 
 export const buildQuizTimeline = (questions: QuizQuestion[]) => {
-  const questionTimelines = questions.map((q, i) =>
-    buildQuestionTimeline(q, i, questions.length),
-  );
+  const questionTimelines = questions.map((q) => buildQuestionTimeline(q));
+  const scoreOutroFrames = secToFrames(TIMING.scoreOutroSec);
 
   let cursor = 0;
   const starts = questionTimelines.map((tl) => {
@@ -81,9 +86,14 @@ export const buildQuizTimeline = (questions: QuizQuestion[]) => {
     return start;
   });
 
+  const scoreOutroStart = cursor;
+  cursor += scoreOutroFrames;
+
   return {
     questionTimelines,
     starts,
+    scoreOutroStart,
+    scoreOutroFrames,
     totalFrames: cursor,
   };
 };

@@ -13,14 +13,17 @@ export type QuizQuestion = {
   voice: string;
   segments: VoiceSegment[];
   /**
-   * When true, skips the answer reveal and shows the comment CTA instead.
-   * Defaults to true for the final question when omitted.
+   * Difficulty badge, e.g. "70% Question".
+   * Falls back to the default ladder by index when omitted.
    */
-  isBonus?: boolean;
+  difficultyLabel?: string;
 };
 
 export type QuizData = {
   title?: string;
+  /** End-screen CTA prompting viewers to comment scores. */
+  scorePrompt?: string;
+  scoreSubtext?: string;
   questions: QuizQuestion[];
 };
 
@@ -29,4 +32,4 @@ export type QuestionPhase =
   | "narration"
   | "countdown"
   | "reveal"
-  | "bonus";
+  | "score";

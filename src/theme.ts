@@ -1,14 +1,23 @@
-/** Design tokens from the product brief. */
+/** Educational whiteboard design tokens. */
 export const colors = {
-  background: "#09090B",
-  card: "rgba(255,255,255,0.08)",
-  cardBorder: "rgba(255,255,255,0.14)",
-  accent: "#3B82F6",
-  correct: "#22C55E",
-  warning: "#F59E0B",
-  text: "#FFFFFF",
-  textMuted: "rgba(255,255,255,0.72)",
+  background: "#F5F7FA",
+  card: "rgba(255,255,255,0.88)",
+  cardBorder: "rgba(37,99,235,0.18)",
+  accent: "#2563EB",
+  correct: "#15803D",
+  warning: "#D97706",
+  text: "#111827",
+  textMuted: "rgba(17,24,39,0.62)",
+  difficulty: "#1D4ED8",
 } as const;
+
+/** Default difficulty labels from easy → hardest. */
+export const DEFAULT_DIFFICULTY_LABELS = [
+  "70% Question",
+  "40% Question",
+  "10% Question",
+  "1% Question",
+] as const;
 
 export const VIDEO = {
   width: 1080,
@@ -23,7 +32,9 @@ export const TIMING = {
   /** Countdown length in seconds. */
   countdownSec: 5,
   /** Hold on the answer / CTA before transitioning. */
-  revealHoldSec: 1.85,
+  revealHoldSec: 1.7,
   /** Duration of the question enter / exit transition. */
   transitionSec: 0.3,
+  /** Final “comment your score” outro length. */
+  scoreOutroSec: 3.2,
 } as const;

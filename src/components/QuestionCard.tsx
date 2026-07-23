@@ -11,7 +11,10 @@ import {
 } from "remotion";
 import { colors } from "../theme";
 import type { QuizQuestion } from "../types";
-import type { QuestionTimeline } from "../utils/timing";
+import {
+  getDifficultyLabel,
+  type QuestionTimeline,
+} from "../utils/timing";
 import { AnswerReveal } from "./AnswerReveal";
 import { CircularTimer } from "./CircularTimer";
 import { DefinitionRenderer } from "./DefinitionRenderer";
@@ -37,6 +40,7 @@ export const QuestionCard: React.FC<Props> = ({
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
+  const difficultyLabel = getDifficultyLabel(question, index);
 
   const intro = spring({
     frame,
@@ -89,11 +93,9 @@ export const QuestionCard: React.FC<Props> = ({
         <Audio src={staticFile(question.voice)} volume={1} />
       </Sequence>
 
-      {!timeline.isBonus ? (
-        <Sequence from={timeline.offsets.reveal} layout="none">
-          <Audio src={staticFile("success.mp3")} volume={0.7} />
-        </Sequence>
-      ) : null}
+      <Sequence from={timeline.offsets.reveal} layout="none">
+        <Audio src={staticFile("success.mp3")} volume={0.7} />
+      </Sequence>
 
       {Array.from({ length: 5 }).map((_, second) => (
         <Sequence
@@ -108,7 +110,7 @@ export const QuestionCard: React.FC<Props> = ({
 
       <AbsoluteFill
         style={{
-          padding: "96px 48px 72px",
+          padding: "88px 44px 64px",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -116,24 +118,31 @@ export const QuestionCard: React.FC<Props> = ({
       >
         <div
           style={{
-            fontSize: 30,
-            fontWeight: 600,
-            color: colors.textMuted,
-            letterSpacing: 2,
+            fontSize: 34,
+            fontWeight: 700,
+            color: colors.difficulty,
+            letterSpacing: 1,
             textTransform: "uppercase",
-            marginBottom: 28,
+            marginBottom: 18,
+            backgroundColor: "rgba(37,99,235,0.1)",
+            border: `2px solid ${colors.accent}`,
+            borderRadius: 999,
+            padding: "10px 28px",
           }}
         >
-          Question {index + 1} / {total}
+          {difficultyLabel}
         </div>
 
         <div
           style={{
-            fontSize: 64,
+            fontSize: 48,
             fontWeight: 700,
-            marginBottom: 56,
+            marginBottom: 40,
             textAlign: "center",
-            letterSpacing: -0.5,
+            letterSpacing: -0.4,
+            lineHeight: 1.15,
+            maxWidth: 920,
+            color: colors.text,
           }}
         >
           {title}
@@ -168,27 +177,27 @@ export const QuestionCard: React.FC<Props> = ({
           ) : null}
 
           {inReveal ? (
-            <AnswerReveal
-              answer={question.answer}
-              frame={revealLocal}
-              isBonus={timeline.isBonus}
-            />
+            <AnswerReveal answer={question.answer} frame={revealLocal} />
           ) : null}
         </div>
 
         <div
           style={{
-            height: 300,
+            height: 280,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            marginBottom: 36,
+            marginBottom: 28,
           }}
         >
           <CircularTimer frame={countdownLocal} visible={inCountdown} />
         </div>
 
-        <ProgressDots total={total} currentIndex={index} />
+        <ProgressDots
+          total={total}
+          currentIndex={index}
+          difficultyLabel={`Question ${index + 1} / ${total}`}
+        />
       </AbsoluteFill>
     </AbsoluteFill>
   );

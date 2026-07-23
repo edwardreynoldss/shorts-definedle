@@ -1,10 +1,13 @@
 {
-  "title": "Guess the Word",
+  "title": "Guess the word from the definition",
+  "scorePrompt": "Comment your score below 👇",
+  "scoreSubtext": "How many did you get right? 4/4? 3/4? Be honest!",
   "questions": [
     {
       "definition": "A person who travels without a permanent home.",
       "answer": "Nomad",
       "voice": "voice1.mp3",
+      "difficultyLabel": "70% Question",
       "segments": [
         { "text": "A person", "time": 0.4 },
         { "text": "who travels", "time": 1.4 },
@@ -15,6 +18,7 @@
       "definition": "A sudden and complete failure or collapse.",
       "answer": "Fiasco",
       "voice": "voice2.mp3",
+      "difficultyLabel": "40% Question",
       "segments": [
         { "text": "A sudden", "time": 0.35 },
         { "text": "and complete failure", "time": 1.2 },
@@ -25,6 +29,7 @@
       "definition": "Something that is extremely large or impressive.",
       "answer": "Colossal",
       "voice": "voice3.mp3",
+      "difficultyLabel": "10% Question",
       "segments": [
         { "text": "Something that is", "time": 0.4 },
         { "text": "extremely large", "time": 1.5 },
@@ -35,7 +40,7 @@
       "definition": "A short, memorable phrase used in advertising.",
       "answer": "Slogan",
       "voice": "voice4.mp3",
-      "isBonus": true,
+      "difficultyLabel": "1% Question",
       "segments": [
         { "text": "A short, memorable phrase", "time": 0.5 },
         { "text": "used in advertising.", "time": 2.2 }
